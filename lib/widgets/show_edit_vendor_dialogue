@@ -1,0 +1,268 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:joya_app/controllers/vendor_detail_controller.dart';
+import 'package:joya_app/utils/colors.dart';
+
+void showEditVendorDialog() {
+  final controller = Get.put(VendorController());
+  showDialog(
+    context: Get.context!,
+    builder: (_) {
+      return AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: SingleChildScrollView(
+          child: Container(
+            width: 600.w,
+            padding: EdgeInsets.all(20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField(
+                    'edit_user_name'.tr, controller.user.value.name),
+                _buildTextField(
+                    'edit_first_name'.tr, controller.user.value.firstName),
+                _buildTextField(
+                    'edit_last_name'.tr, controller.user.value.lastName),
+                _buildTextField(
+                    'edit_email'.tr, controller.user.value.email),
+                _buildTextField(
+                    'edit_phone'.tr, controller.user.value.phone),
+                _buildTextField(
+                    'edit_password'.tr, controller.user.value.password),
+                _buildDropdown('edit_choose_country'.tr,
+                    controller.country, controller.countries),
+                SizedBox(height: 10.h),
+                Text(
+                  'edit_choose_language'.tr,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.sp,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Row(
+                  children: [
+                    langButton(
+                        'edit_lang_english'.tr, 'English', controller),
+                    SizedBox(width: 10.w),
+                    langButton(
+                        'edit_lang_arabic'.tr, 'عربي', controller),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+                _buildDropdown(
+                    'edit_role'.tr, controller.role, controller.roles),
+                SizedBox(height: 20.h),
+                Text(
+                  'edit_service_category'.tr,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14.sp),
+                ),
+                SizedBox(height: 8.h),
+                Wrap(
+                  spacing: 8.w,
+                  children: controller.allCategories.map((category) {
+                    return Obx(() => FilterChip(
+                          label: Text(
+                            category,
+                            style: TextStyle(fontSize: 12.sp),
+                          ),
+                          selected: controller.selectedCategories
+                              .contains(category),
+                          onSelected: (_) =>
+                              controller.toggleCategory(category),
+                        ));
+                  }).toList(),
+                ),
+                SizedBox(height: 20.h),
+                Text(
+                  'edit_image'.tr,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14.sp),
+                ),
+                SizedBox(height: 10.h),
+                Obx(() => Stack(
+                      children: [
+                        Container(
+                          height: 200.h,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: Image.network(
+                              controller.imageUrl.value,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 10.w,
+                          top: 10.h,
+                          child: CircleAvatar(
+                            radius: 16.r,
+                            backgroundColor:
+                                Colors.black.withOpacity(0.6),
+                            child: Icon(
+                              Icons.close,
+                              size: 16.sp,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                      ],
+                    )),
+                SizedBox(height: 10.h),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () {},
+                    icon: Icon(Icons.camera, size: 20.sp),
+                    label: Text(
+                      'edit_retake'.tr,
+                      style: TextStyle(fontSize: 14.sp),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(
+                        "edit_cancel".tr,
+                        style: TextStyle(fontSize: 14.sp),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 24.w, vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      child: Text(
+                        "edit_save".tr,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 14.sp),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildTextField(String label, String value) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 8.h),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style:
+              TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
+        ),
+        SizedBox(height: 5.h),
+        TextFormField(
+          initialValue: value,
+          style: TextStyle(fontSize: 14.sp),
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 10.h,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildDropdown(
+    String label, RxString selected, List<String> options) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 8.h),
+    child: Obx(() => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
+            ),
+            SizedBox(height: 5.h),
+            DropdownButtonFormField<String>(
+              value: selected.value.isEmpty ? null : selected.value,
+              onChanged: (val) => selected.value = val ?? '',
+              items: options
+                  .map((item) => DropdownMenuItem(
+                        value: item,
+                        child: Text(item, style: TextStyle(fontSize: 14.sp)),
+                      ))
+                  .toList(),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 10.h,
+                ),
+              ),
+            ),
+          ],
+        )),
+  );
+}
+
+Widget langButton(
+    String text, String langCode, VendorController controller) {
+  return Obx(() {
+    final selected = controller.language.value == langCode;
+    return GestureDetector(
+      onTap: () {
+        controller.language.value = langCode;
+      },
+      child: Container(
+        width: 100.w,
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        decoration: BoxDecoration(
+          color: selected ? primaryColor : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(color: primaryColor),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: selected ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 14.sp,
+            ),
+          ),
+        ),
+      ),
+    );
+  });
+}
