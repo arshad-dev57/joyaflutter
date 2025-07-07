@@ -24,7 +24,7 @@ var addPortfolioLoading = false.obs;
 
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
-  var selectedServiceNames = <String>[].obs;   // ✅ NEW
+  var selectedServiceNames = <String>[].obs;
   var serviceNames = <String>[].obs;
 
 
@@ -53,7 +53,6 @@ Future<void> fetchServiceNames() async {
 
         serviceNames.value = names;
 
-        // ✅ Example: automatically select first 2 services
         selectedServiceNames.value =
             names.length >= 2 ? names.sublist(0, 2) : names;
 
