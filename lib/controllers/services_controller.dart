@@ -1,18 +1,24 @@
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:joya_app/models/ad_model.dart';
 import 'package:joya_app/models/servides_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServicesController extends GetxController {
   var isLoading = false.obs;
-  var servicesList = <ServiceModel>[].obs;
   var isLoadingAds = false.obs;
-  var adsList = <AdModel>[].obs;
 
+  var servicesList = <ServiceModel>[].obs;
+  var adsList = <AdModel>[].obs;
+ var createadloading = false.obs;
   var serviceNames = <String>[].obs;
-  var selectedServiceNames = <String>[].obs;   // ✅ NEW
+  var selectedServiceNames = <String>[].obs;
 
   @override
   void onInit() {
@@ -21,6 +27,64 @@ class ServicesController extends GetxController {
     fetchAds();
     super.onInit();
   }
+
+var createServiceLoading = false.obs;
+
+Future<void> createService({
+  required String title,
+  required Uint8List? webImageBytes,
+  required File? mobileImageFile,
+}) async {
+  createServiceLoading.value = true;
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://localhost:5000/api/services/createservice'),
+    );
+
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['title'] = title;
+
+    if (kIsWeb && webImageBytes != null) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'imageUrl',
+          webImageBytes,
+          filename: 'web_image.jpg',
+        ),
+      );
+    } else if (mobileImageFile != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'imageUrl',
+          mobileImageFile.path,
+        ),
+      );
+    }
+
+    var response = await request.send();
+
+    if (response.statusCode == 201) {
+      await fetchServices();
+      Get.snackbar("Success", "Service created successfully",
+          backgroundColor: Colors.green, colorText: Colors.white);
+    } else {
+      Get.snackbar("Error", "Failed to create service",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  } catch (e) {
+    Get.snackbar("Error", e.toString(),
+        backgroundColor: Colors.red, colorText: Colors.white);
+  } finally {
+    createServiceLoading.value = false;
+  }
+}
+
+
 
   Future<void> fetchAds() async {
     isLoading.value = true;
@@ -56,7 +120,6 @@ class ServicesController extends GetxController {
     }
   }
 
-  /// ✅ Fetch service names + set default selected services
   Future<void> fetchServiceNames() async {
     try {
       var url = Uri.parse('http://localhost:5000/api/services/getservices');
@@ -73,8 +136,6 @@ class ServicesController extends GetxController {
         }
 
         serviceNames.value = names;
-
-        // ✅ Example: automatically select first 2 services
         selectedServiceNames.value =
             names.length >= 2 ? names.sublist(0, 2) : names;
 
@@ -113,6 +174,60 @@ class ServicesController extends GetxController {
       print("Error fetching services: $e");
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // ✅ Function to create Ad (image upload for web + mobile)
+  Future<void> createAd({
+    required Uint8List? webImageBytes,
+    required File? mobileImageFile,
+  }) async {
+    try {
+      createadloading.value = true;
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        Get.snackbar("Auth Error", "User token not found");
+        return;
+      }
+
+      final uri = Uri.parse("http://localhost:5000/api/ad/createads");
+      var request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+
+      if (kIsWeb && webImageBytes != null) {
+        final multipartFile = http.MultipartFile.fromBytes(
+          'image',
+          webImageBytes,
+          filename: 'ad_image_web.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        );
+        request.files.add(multipartFile);
+      } else if (!kIsWeb && mobileImageFile != null) {
+        final multipartFile = await http.MultipartFile.fromPath(
+          'image',
+          mobileImageFile.path,
+        );
+        request.files.add(multipartFile);
+      } else {
+        Get.snackbar("Error", "No image selected");
+        return;
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        print("✅ Ad created");
+        fetchAds(); // refresh
+      } else {
+        print("❌ Failed to create ad: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Error creating ad: $e");
+    }finally{
+      createadloading.value = false;
     }
   }
 }

@@ -10,11 +10,9 @@ import 'package:joya_app/utils/app_translation.dart';
 void main() {
   runApp(MyApp());
 }
-
 class MyApp extends StatelessWidget {
   final languageController = Get.put(LanguageController());
   MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(

@@ -43,7 +43,6 @@ var getReviewsLoading = false.obs;
   Rx<Uint8List?> socialImageBytes = Rx<Uint8List?>(null);
   RxString socialImageBase64 = "".obs;
 
-  /// Pick main vendor image (web or mobile)
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -120,10 +119,10 @@ var getReviewsLoading = false.obs;
 
   /// Submit the vendor form to API
   Future<void> submit() async {
-    if (!formKey.currentState!.validate()) {
-      print("Form invalid");
-      return;
-    }
+    // if (!formKey.currentState!.validate()) {
+    //   print("Form invalid");
+    //   return;
+    // }
 
     isSubmitting.value = true;
 
@@ -150,13 +149,10 @@ var getReviewsLoading = false.obs;
         "image": imageBase64.value.isNotEmpty ? imageBase64.value : null,
       };
 
-      // Remove null fields
       payload.removeWhere((key, value) => value == null);
 
-      /// ✅ SAFE PAYLOAD LOGGING
       final payloadCopy = Map<String, dynamic>.from(payload);
 
-      // Remove base64 image
       payloadCopy.remove("image");
 
       if (payloadCopy.containsKey("url")) {
@@ -189,7 +185,9 @@ var getReviewsLoading = false.obs;
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
+          Get.back();
           clearForm();
+          fetchAllVendors();
         } else {
           Get.snackbar(
             "Error",
@@ -403,6 +401,62 @@ Future<void> getReviews(String vendorId) async {
     }
   } catch (e) {
     print("Error while fetching reviews: $e");
+  }
+}
+
+
+Future<void> fetchAllVendors() async {
+  try {
+    isLoadingVendors.value = true;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    final url = Uri.parse('http://localhost:5000/api/vendors/getvendors');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData["success"] == true) {
+        final List data = jsonData["data"];
+        vendors.value = data.map((item) => VendorModel.fromJson(item)).toList();
+
+        print("Fetched all ${vendors.length} vendors.");
+      } else {
+        Get.snackbar(
+          "Error",
+          jsonData["message"] ?? "Something went wrong",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        print("Failed to fetch vendors: ${jsonData["message"]}");
+      }
+    } else {
+      Get.snackbar(
+        "Error",
+        "Failed to fetch vendors. Status: ${response.statusCode}",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+print("Failed to fetch vendors. Status: ${response.statusCode}");
+print("Response body: ${response.body}");
+    }
+  } catch (e) {
+    print("Exception in fetchAllVendors: $e");
+    Get.snackbar(
+      "Error",
+      e.toString(),
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoadingVendors.value = false;
   }
 }
 

@@ -54,7 +54,33 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                         buildTextField(controller.emailCtrl, "Email *", "Enter Email", keyboardType: TextInputType.emailAddress),
                         buildTextField(controller.phoneCtrl, "Phone *", "Enter Phone", keyboardType: TextInputType.phone),
                         buildTextField(controller.codeCtrl, "Code *", "Enter Code"),
-                        buildTextField(controller.countryCtrl, "Country *", "Enter Country"),
+Text(
+  "Country *",
+  style: TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 14.sp,
+    color: primaryColor,
+  ),
+),
+SizedBox(height: 8.h),
+DropdownButtonFormField<String>(
+  value: controller.countryCtrl.text.isEmpty ? null : controller.countryCtrl.text,
+  decoration: inputDecoration(primaryColor, context),
+  hint: Text("Select Country", style: TextStyle(fontSize: 14.sp)),
+  items: ['Pakistan', 'Saudi Arabia', 'UAE', 'Egypt', 'Qatar']
+      .map((country) => DropdownMenuItem(
+            value: country,
+            child: Text(country),
+          ))
+      .toList(),
+  onChanged: (val) {
+    controller.countryCtrl.text = val!;
+  },
+  validator: (val) {
+    if (val == null || val.isEmpty) return "Country is required";
+    return null;
+  },
+),
 
                         SizedBox(height: 12.h),
                         Text(
@@ -83,54 +109,50 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                               ),
                             );
                           } else {
-                            return MultiSelectDialogField<String>(
-                              items: serviceController.serviceNames
-                                  .map((name) => MultiSelectItem<String>(name, name))
-                                  .toList(),
-                              initialValue: serviceController.selectedServiceNames,
-                              searchable: true,
-                              listType: MultiSelectListType.LIST,
-                              selectedColor: primaryColor,
-                              chipDisplay: MultiSelectChipDisplay(
-                                textStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp,
-                                ),
-                                chipColor: primaryColor,
-                                onTap: (value) {
-                                  serviceController.selectedServiceNames.remove(value);
-                                },
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1.w,
-                                ),
-                              ),
-                              buttonIcon: Icon(
-                                Icons.add,
-                                color: primaryColor,
-                              ),
-                              buttonText: Text(
-                                "Select Services",
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 14.sp,
-                                ),
-                              ),
-                              onConfirm: (values) {
-                                serviceController.selectedServiceNames.value = values;
-                              },
-                              validator: (values) {
-                                if (values == null || values.isEmpty) {
-                                  return "At least one service is required";
-                                }
-                                return null;
-                              },
-                            );
+                            return Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Wrap(
+      spacing: 10.w,
+      runSpacing: 10.h,
+      children: serviceController.serviceNames.map((service) {
+        final isSelected = serviceController.selectedServiceNames.contains(service);
+        return FilterChip(
+          selected: isSelected,
+          label: Text(service),
+          selectedColor: primaryColor,
+          backgroundColor: Colors.grey.shade200,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.white : Colors.black,
+            fontWeight: FontWeight.w500,
+            fontSize: 12.sp,
+          ),
+          onSelected: (bool selected) {
+            if (selected) {
+              serviceController.selectedServiceNames.add(service);
+            } else {
+              serviceController.selectedServiceNames.remove(service);
+            }
+          },
+        );
+      }).toList(),
+    ),
+    SizedBox(height: 8.h),
+    Obx(() {
+      if (serviceController.selectedServiceNames.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.only(top: 8.h),
+          child: Text(
+            "At least one service is required",
+            style: TextStyle(color: Colors.red, fontSize: 12.sp),
+          ),
+        );
+      }
+      return SizedBox.shrink();
+    }),
+  ],
+);
+
                           }
                         }),
 

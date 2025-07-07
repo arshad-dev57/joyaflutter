@@ -8,7 +8,7 @@ import 'package:joya_app/utils/colors.dart';
 class VendorDetailScreen extends StatefulWidget {
   final VendorModel vendor;
 
-  VendorDetailScreen({super.key, required this.vendor});
+  const VendorDetailScreen({super.key, required this.vendor});
 
   @override
   State<VendorDetailScreen> createState() => _VendorDetailScreenState();
@@ -175,7 +175,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                       buildAddReviewSection(vendor),
                       SizedBox(height: 20.h),
                       sectionTitle("vendor_social_links".tr),
-                      ...vendor.urls!.map(
+                      ...vendor.urls.map(
                         (link) => buildSocialLink(
                           link.name ?? "Unknown",
                           link.url ?? "",

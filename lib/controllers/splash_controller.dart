@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
+import 'package:joya_app/screens/admin_all_vendors_screen.dart';
+import 'package:joya_app/screens/admin_home_view.dart';
 import 'package:joya_app/screens/login_screnn.dart';
 import 'package:joya_app/screens/user_homeview.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:joya_app/screens/vendor_homeview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashController extends GetxController {
   @override

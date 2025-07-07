@@ -8,16 +8,15 @@ import 'package:joya_app/utils/colors.dart';
 import 'package:joya_app/widgets/add_vendor_dialogue.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AllVendorsScreen extends StatefulWidget {
-  final String country;
-  final String service;
-  const AllVendorsScreen({super.key, required this.country, required this.service});
+class adminallvendorsscreen extends StatefulWidget {
+
+  const adminallvendorsscreen({super.key,});
 
   @override
-  State<AllVendorsScreen> createState() => _AllVendorsScreenState();
+  State<adminallvendorsscreen> createState() => _adminallvendorsscreenState();
 }
 
-class _AllVendorsScreenState extends State<AllVendorsScreen> {
+class _adminallvendorsscreenState extends State<adminallvendorsscreen> {
   String? currentUserRole;
 
   final AllVendorsController controller = Get.put(AllVendorsController());
@@ -26,10 +25,9 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
   void initState() {
     super.initState();
     loadUserRole();
-    controller.fetchVendors(
-      country: widget.country,
-      service: widget.service,
+    controller.fetchAllVendors(
     );
+    print("fetched 231");
   }
 
  Future<void> loadUserRole() async {
@@ -97,7 +95,6 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
                     },
                   ),
                 ),
-                if (currentUserRole != "user")
                   ElevatedButton(
                     onPressed: () {
                       Get.dialog(AddVendorDialog());

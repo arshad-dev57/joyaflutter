@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/po4rtfolio_controller.dart';
 import 'package:joya_app/models/portfolio_model.dart';
+import 'package:joya_app/screens/portfolio_detail_screen.dart';
 import 'package:joya_app/utils/colors.dart';
 import 'package:joya_app/widgets/portfolio_dialogue.dart';
 import 'package:joya_app/widgets/shimmer.dart';
@@ -96,7 +97,11 @@ class VendorPortfolioScreen extends StatelessWidget {
                   itemCount: portfolioController.portfolioList.length,
                   itemBuilder: (context, index) {
                     final item = portfolioController.portfolioList[index];
-                    return _buildPortfolioCard(item);
+                    return InkWell(
+                      onTap: (){
+                        Get.to(PortfolioDetailScreen(portfolio: item,));
+                      },
+                      child: _buildPortfolioCard(item));
                   },
                 );
               }
@@ -107,177 +112,136 @@ class VendorPortfolioScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPortfolioCard(PortfolioModel item) {
-    final PageController pageController = PageController();
+ Widget _buildPortfolioCard(PortfolioModel item) {
+  final PageController pageController = PageController();
 
-    return StatefulBuilder(
-      builder: (context, setState) {
-        int currentPage = 0;
+  return Container(
+    margin: EdgeInsets.only(bottom: 16.h),
+    padding: EdgeInsets.all(12.r),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12.r),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.shade300,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        )
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// Title
+        Text(item.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16.sp,
+              color: Colors.black87,
+            )),
+        SizedBox(height: 6.h),
 
-        void goNext() {
-          if (currentPage < item.images.length - 1) {
-            currentPage++;
-            pageController.animateToPage(
-              currentPage,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-            setState(() {});
-          }
-        }
+        /// Description
+        Text(item.description,
+            style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade700)),
+        SizedBox(height: 10.h),
 
-        void goPrev() {
-          if (currentPage > 0) {
-            currentPage--;
-            pageController.animateToPage(
-              currentPage,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-            );
-            setState(() {});
-          }
-        }
+        /// Image Slider
+        if (item.images.isNotEmpty)
+          SizedBox(
+            height: 180.h,
+            child: PageView.builder(
+              controller: pageController,
+              itemCount: item.images.length,
+              itemBuilder: (context, index) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Image.network(
+                    item.images[index],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder: (_, __, ___) => Icon(Icons.broken_image),
+                  ),
+                );
+              },
+            ),
+          ),
 
-        return Container(
-          margin: EdgeInsets.only(bottom: 16.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.shade300,
-                blurRadius: 8.r,
-                offset: Offset(0, 4.h),
-              )
+        SizedBox(height: 10.h),
+
+        /// Services
+        if (item.services.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: item.services
+                .map((s) => Chip(
+                      label: Text(s),
+                      backgroundColor: Colors.blue.shade50,
+                      labelStyle: TextStyle(color: Colors.blue),
+                    ))
+                .toList(),
+          ),
+
+        SizedBox(height: 10.h),
+
+        /// Location, Duration, Client Type
+        _infoRow("Location", item.location),
+        _infoRow("Duration", item.duration),
+        _infoRow("Client Type", item.clientType),
+
+        /// Price Range
+        _infoRow("Price Range", item.priceRange),
+
+        /// Tags
+        if (item.tags != null && item.tags!.isNotEmpty)
+          _infoRow("Tags", item.tags!.join(', ')),
+
+        /// Ratings
+        if (item.ratings != null)
+          Row(
+            children: [
+              Icon(Icons.star, color: Colors.orange, size: 18.sp),
+              SizedBox(width: 4.w),
+              Text("${item.ratings}", style: TextStyle(fontSize: 14.sp)),
             ],
           ),
-          child: Column(
+
+        /// Testimonials
+        if (item.testimonials != null && item.testimonials!.isNotEmpty)
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// Image slider
-              if (item.images.isNotEmpty)
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(12.r),
-                      ),
-                      child: SizedBox(
-                        height: 200.h,
-                        width: double.infinity,
-                        child: PageView.builder(
-                          controller: pageController,
-                          itemCount: item.images.length,
-                          onPageChanged: (index) {
-                            currentPage = index;
-                            setState(() {});
-                          },
-                          itemBuilder: (context, index) {
-                            return Image.network(
-                              item.images[index],
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(Icons.broken_image),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    /// Left Button
-                    Positioned(
-                      left: 10.w,
-                      top: 80.h,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.chevron_left,
-                          color: Colors.white,
-                          size: 30.sp,
-                        ),
-                        onPressed: goPrev,
-                      ),
-                    ),
-
-                    /// Right Button
-                    Positioned(
-                      right: 10.w,
-                      top: 80.h,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.chevron_right,
-                          color: Colors.white,
-                          size: 30.sp,
-                        ),
-                        onPressed: goNext,
-                      ),
-                    ),
-
-                    /// Page dots
-                    Positioned(
-                      bottom: 10.h,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          item.images.length,
-                          (index) => Container(
-                            margin: EdgeInsets.symmetric(horizontal: 3.w),
-                            width: 8.w,
-                            height: 8.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: index == currentPage
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.4),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-              /// Text
-              Padding(
-                padding: EdgeInsets.all(12.r),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      item.description,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              )
+              SizedBox(height: 10.h),
+              Text("Testimonials:",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              ...item.testimonials!.map((t) => Text("- $t")),
             ],
           ),
-        );
-      },
-    );
-  }
+
+        SizedBox(height: 10.h),
+
+        /// Created Date
+        Text("Created on: ${item.createdAt.toLocal().toString().split(' ')[0]}",
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
+      ],
+    ),
+  );
+}
+
+Widget _infoRow(String title, String? value) {
+  if (value == null || value.isEmpty) return SizedBox.shrink();
+  return Padding(
+    padding: EdgeInsets.only(top: 4.h),
+    child: Row(
+      children: [
+        Text("$title: ",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp)),
+        Expanded(child: Text(value, style: TextStyle(fontSize: 13.sp))),
+      ],
+    ),
+  );
+}
 
   InputDecoration inputDecoration(Color primaryColor, BuildContext context) =>
       InputDecoration(

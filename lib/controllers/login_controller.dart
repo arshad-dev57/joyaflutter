@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:joya_app/screens/all_users_screen.dart';
 import 'package:joya_app/screens/user_homeview.dart';
 import 'package:joya_app/screens/vendor_homeview.dart';
 import 'dart:convert';
@@ -55,9 +56,9 @@ class LoginController extends GetxController {
       Get.snackbar('Success', 'Login successful!');
 
       if (role.toLowerCase() == 'vendor') {
-        Get.offAll(() => VendorHomeScreen());
+        Get.offAll(() => AllUsersScreen());
       } else {
-        Get.offAll(() => HomeScreen());
+        Get.offAll(() => AllUsersScreen());
       }
     } else {
       print("status code: ${response.statusCode}");
