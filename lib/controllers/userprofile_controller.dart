@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:joya_app/models/profile_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:joya_app/screens/login_screnn.dart';
+import 'package:joya_app/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfileController extends GetxController {
@@ -24,7 +25,7 @@ class UserProfileController extends GetxController {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
 
-      var url = Uri.parse('http://localhost:5000/api/users/profile');
+      var url = Uri.parse('$baseUrl/users/profile');
 
       var response = await http.get(
         url,
@@ -55,7 +56,7 @@ class UserProfileController extends GetxController {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
 
-      var url = Uri.parse('http://localhost:5000/api/users/logout');
+      var url = Uri.parse('$baseUrl/users/logout');
 
       var response = await http.post(
         url,

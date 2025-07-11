@@ -9,107 +9,87 @@ void showEditVendorDialog() {
   showDialog(
     context: Get.context!,
     builder: (_) {
-      return AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        content: SingleChildScrollView(
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        child: SingleChildScrollView(
           child: Container(
             width: 600.w,
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.all(24.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTextField(
-                    'edit_user_name'.tr, controller.user.value.name),
-                _buildTextField(
-                    'edit_first_name'.tr, controller.user.value.firstName),
-                _buildTextField(
-                    'edit_last_name'.tr, controller.user.value.lastName),
-                _buildTextField(
-                    'edit_email'.tr, controller.user.value.email),
-                _buildTextField(
-                    'edit_phone'.tr, controller.user.value.phone),
-                _buildTextField(
-                    'edit_password'.tr, controller.user.value.password),
-                _buildDropdown('edit_choose_country'.tr,
-                    controller.country, controller.countries),
-                SizedBox(height: 10.h),
-                Text(
-                  'edit_choose_language'.tr,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14.sp,
-                  ),
-                ),
-                SizedBox(height: 10.h),
+                Text('edit_vendor'.tr,
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    )),
+                SizedBox(height: 20.h),
+
+                _buildTextField('edit_user_name'.tr, controller.user.value.name),
+                _buildTextField('edit_first_name'.tr, controller.user.value.firstName),
+                _buildTextField('edit_last_name'.tr, controller.user.value.lastName),
+                _buildTextField('edit_email'.tr, controller.user.value.email),
+                _buildTextField('edit_phone'.tr, controller.user.value.phone),
+                _buildTextField('edit_password'.tr, controller.user.value.password),
+
+                _buildDropdown('edit_choose_country'.tr, controller.country, controller.countries),
+
+                SizedBox(height: 16.h),
+                _sectionTitle('edit_choose_language'.tr),
                 Row(
                   children: [
-                    langButton(
-                        'edit_lang_english'.tr, 'English', controller),
+                    langButton('edit_lang_english'.tr, 'English', controller),
                     SizedBox(width: 10.w),
-                    langButton(
-                        'edit_lang_arabic'.tr, 'عربي', controller),
+                    langButton('edit_lang_arabic'.tr, 'عربي', controller),
                   ],
                 ),
-                SizedBox(height: 20.h),
-                _buildDropdown(
-                    'edit_role'.tr, controller.role, controller.roles),
-                SizedBox(height: 20.h),
-                Text(
-                  'edit_service_category'.tr,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14.sp),
-                ),
-                SizedBox(height: 8.h),
+
+                SizedBox(height: 16.h),
+                _buildDropdown('edit_role'.tr, controller.role, controller.roles),
+
+                SizedBox(height: 16.h),
+                _sectionTitle('edit_service_category'.tr),
                 Wrap(
                   spacing: 8.w,
+                  runSpacing: 6.h,
                   children: controller.allCategories.map((category) {
                     return Obx(() => FilterChip(
-                          label: Text(
-                            category,
-                            style: TextStyle(fontSize: 12.sp),
-                          ),
-                          selected: controller.selectedCategories
-                              .contains(category),
-                          onSelected: (_) =>
-                              controller.toggleCategory(category),
+                          label: Text(category, style: TextStyle(fontSize: 12.sp)),
+                          selected: controller.selectedCategories.contains(category),
+                          onSelected: (_) => controller.toggleCategory(category),
+                          selectedColor: primaryColor.withOpacity(0.15),
+                          checkmarkColor: primaryColor,
                         ));
                   }).toList(),
                 ),
-                SizedBox(height: 20.h),
-                Text(
-                  'edit_image'.tr,
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14.sp),
-                ),
-                SizedBox(height: 10.h),
+
+                SizedBox(height: 16.h),
+                _sectionTitle('edit_image'.tr),
                 Obx(() => Stack(
                       children: [
                         Container(
                           height: 200.h,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
                             borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12.r),
-                            child: Image.network(
-                              controller.imageUrl.value,
+                            image: DecorationImage(
+                              image: NetworkImage(controller.imageUrl.value),
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
                         Positioned(
-                          right: 10.w,
                           top: 10.h,
-                          child: CircleAvatar(
-                            radius: 16.r,
-                            backgroundColor:
-                                Colors.black.withOpacity(0.6),
-                            child: Icon(
-                              Icons.close,
-                              size: 16.sp,
-                              color: Colors.white,
+                          right: 10.w,
+                          child: GestureDetector(
+                            onTap: () {
+                              controller.imageUrl.value = '';
+                            },
+                            child: CircleAvatar(
+                              radius: 16.r,
+                              backgroundColor: Colors.black.withOpacity(0.6),
+                              child: Icon(Icons.close, size: 16.sp, color: Colors.white),
                             ),
                           ),
                         )
@@ -119,14 +99,12 @@ void showEditVendorDialog() {
                 Center(
                   child: TextButton.icon(
                     onPressed: () {},
-                    icon: Icon(Icons.camera, size: 20.sp),
-                    label: Text(
-                      'edit_retake'.tr,
-                      style: TextStyle(fontSize: 14.sp),
-                    ),
+                    icon: Icon(Icons.camera_alt_outlined, size: 18.sp),
+                    label: Text('edit_retake'.tr, style: TextStyle(fontSize: 14.sp)),
                   ),
                 ),
-                SizedBox(height: 20.h),
+
+                SizedBox(height: 24.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -134,7 +112,7 @@ void showEditVendorDialog() {
                       onPressed: () => Get.back(),
                       child: Text(
                         "edit_cancel".tr,
-                        style: TextStyle(fontSize: 14.sp),
+                        style: TextStyle(fontSize: 14.sp, color: Colors.black87),
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -142,22 +120,17 @@ void showEditVendorDialog() {
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 24.w, vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                        elevation: 2,
                       ),
                       child: Text(
                         "edit_save".tr,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 14.sp),
+                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -166,31 +139,31 @@ void showEditVendorDialog() {
     },
   );
 }
-
 Widget _buildTextField(String label, String value) {
   return Padding(
-    padding: EdgeInsets.symmetric(vertical: 8.h),
+    padding: EdgeInsets.only(bottom: 14.h),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style:
-              TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
-        ),
-        SizedBox(height: 5.h),
+        Text(label,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade800,
+            )),
+        SizedBox(height: 6.h),
         TextFormField(
           initialValue: value,
           style: TextStyle(fontSize: 14.sp),
           decoration: InputDecoration(
+            hintText: 'Enter $label',
+            filled: true,
+            fillColor: Colors.grey.shade100,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(10.r),
+              borderSide: BorderSide.none,
             ),
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 12.w,
-              vertical: 10.h,
-            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           ),
         ),
       ],
@@ -198,43 +171,42 @@ Widget _buildTextField(String label, String value) {
   );
 }
 
-Widget _buildDropdown(
-    String label, RxString selected, List<String> options) {
+Widget _buildDropdown(String label, RxString selected, List<String> options) {
   return Padding(
-    padding: EdgeInsets.symmetric(vertical: 8.h),
+    padding: EdgeInsets.only(bottom: 14.h),
     child: Obx(() => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
-            ),
-            SizedBox(height: 5.h),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800)),
+            SizedBox(height: 6.h),
             DropdownButtonFormField<String>(
               value: selected.value.isEmpty ? null : selected.value,
               onChanged: (val) => selected.value = val ?? '',
               items: options
                   .map((item) => DropdownMenuItem(
                         value: item,
-                        child: Text(item, style: TextStyle(fontSize: 14.sp)),
+                        child: Text(item, style: TextStyle(fontSize: 13.sp)),
                       ))
                   .toList(),
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: BorderSide.none,
                 ),
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 10.h,
-                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
               ),
             ),
           ],
         )),
   );
 }
+
 
 Widget langButton(
     String text, String langCode, VendorController controller) {

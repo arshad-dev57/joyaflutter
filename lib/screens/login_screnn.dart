@@ -4,15 +4,11 @@ import 'package:get/get.dart';
 import 'package:joya_app/controllers/language_controller.dart';
 import 'package:joya_app/controllers/login_controller.dart';
 import 'package:joya_app/screens/regisdter_screen.dart';
-import 'package:joya_app/screens/vendor_homeview.dart';
 import 'package:joya_app/utils/colors.dart';
-
 class LoginScreen extends StatelessWidget {
   final LoginController controller = Get.put(LoginController());
   final _formKey = GlobalKey<FormState>();
-
   LoginScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -4,11 +4,21 @@ import 'package:get/get.dart';
 import 'package:joya_app/controllers/userprofile_controller.dart';
 import 'package:shimmer/shimmer.dart';
 
-class UserProfileScreen extends StatelessWidget {
+class UserProfileScreen extends StatefulWidget {
   // Dummy data (replace with real user data)
 
    UserProfileScreen({super.key});
+
+  @override
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
 final UserProfileController controller = Get.put(UserProfileController());
+initState() {
+  super.initState();
+  controller.fetchUserProfile();
+}
   @override
   Widget build(BuildContext context) {
 
@@ -198,5 +208,4 @@ Widget _buildShimmerProfile() {
     ),
   );
 }
-
 }

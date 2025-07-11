@@ -2,309 +2,299 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/po4rtfolio_controller.dart';
-import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
-import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
-import 'package:multi_select_flutter/util/multi_select_item.dart';
-import 'package:multi_select_flutter/util/multi_select_list_type.dart';
+import '../controllers/services_controller.dart';
 import '../utils/colors.dart';
 
 class AddPortfolioDialog extends StatelessWidget {
-  AddPortfolioDialog({super.key});
-
   final PortfolioController controller = Get.put(PortfolioController());
+  final ServicesController servicesController = Get.put(ServicesController());
+
+  AddPortfolioDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return
-    
-    
-    
-     Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-      ),
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Form(
-            key: controller.formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "add_portfolio_title".tr,
+        padding: EdgeInsets.all(20.w),
+        child: Form(
+          key: controller.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Add Portfolio",
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+              SizedBox(height: 16.h),
+
+              /// Title
+              buildTextField("Title", controller.titleCtrl),
+
+              /// Description
+              buildTextField("Description", controller.descCtrl, maxLines: 3),
+
+              /// ✅ Service Type (Choice Chips)
+              Text("Select Service Type",
                   style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
-                ),
-                SizedBox(height: 20.h),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.sp,
+                      color: primaryColor)),
+              SizedBox(height: 8.h),
+              Obx(() {
+                return Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: servicesController.serviceNames.map((service) {
+                    final isSelected =
+                        controller.serviceTypeList.contains(service);
 
-                /// Image Picker Section
-                Obx(() {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GestureDetector(
-                        onTap: controller.pickImage,
-                        child: Container(
-                          height: 100.h,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: Colors.grey.shade300,
-                              width: 1.w,
-                            ),
-                          ),
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.add, color: Colors.grey, size: 24.sp),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  "add_portfolio_add_photo".tr,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                    return ChoiceChip(
+                      label: Text(service, style: TextStyle(fontSize: 12.sp)),
+                      selected: isSelected,
+                      selectedColor: primaryColor.withOpacity(0.2),
+                      onSelected: (val) {
+                        if (val) {
+                          controller.serviceTypeList.add(service);
+                        } else {
+                          controller.serviceTypeList.remove(service);
+                        }
+                      },
+                      labelStyle: TextStyle(
+                        color: isSelected ? primaryColor : Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        side: BorderSide(
+                          color:
+                              isSelected ? primaryColor : Colors.grey.shade300,
                         ),
                       ),
-                      SizedBox(height: 12.h),
+                      backgroundColor: Colors.white,
+                    );
+                  }).toList(),
+                );
+              }),
 
-                      controller.imageFiles.isEmpty
-                          ? const SizedBox()
-                          : SizedBox(
-                              height: 100.h,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: controller.imageFiles.length,
-                                itemBuilder: (context, index) {
-                                  return Stack(
-                                    children: [
-                                      Container(
-                                        margin: EdgeInsets.only(right: 10.w),
-                                        width: 100.w,
-                                        height: 100.h,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12.r),
-                                          image: DecorationImage(
-                                            image: FileImage(
-                                              controller.imageFiles[index],
-                                            ),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        right: 4.w,
-                                        top: 4.h,
-                                        child: GestureDetector(
-                                          onTap: () =>
-                                              controller.removeImage(index),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.black54,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            padding: EdgeInsets.all(4.w),
-                                            child: Icon(
-                                              Icons.close,
-                                              size: 18.sp,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                    ],
-                  );
-                }),
-                SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-                /// Title
-                TextFormField(
-                  controller: controller.titleCtrl,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "add_portfolio_title_required".tr;
+              /// Number of Projects
+              buildTextField("Number of Projects", controller.numberOfProjectsCtrl,
+                  inputType: TextInputType.number),
+
+              /// Min Hours
+              buildTextField("Min Hours", controller.minHoursCtrl,
+                  inputType: TextInputType.number),
+
+              /// Max Hours
+              buildTextField("Max Hours", controller.maxHoursCtrl,
+                  inputType: TextInputType.number),
+
+              /// Estimated Cost Min
+              buildTextField("Estimated Cost Min", controller.costMinCtrl,
+                  inputType: TextInputType.number),
+
+              /// Estimated Cost Max
+              buildTextField("Estimated Cost Max", controller.costMaxCtrl,
+                  inputType: TextInputType.number),
+
+              /// Currency
+              buildTextField("Currency", controller.currencyCtrl),
+
+              /// Skills Used
+              buildTextField(
+                "Skills Used (comma separated)",
+                TextEditingController(
+                    text: controller.skillsUsed.join(',')),
+                onChanged: (val) {
+                  controller.skillsUsed.value =
+                      val.split(',').map((e) => e.trim()).toList();
+                },
+              ),
+
+              /// Equipment Used
+              buildTextField(
+                "Equipment Used (comma separated)",
+                TextEditingController(
+                    text: controller.equipmentUsed.join(',')),
+                onChanged: (val) {
+                  controller.equipmentUsed.value =
+                      val.split(',').map((e) => e.trim()).toList();
+                },
+              ),
+
+              /// Highlights
+              buildTextField("Highlights", controller.highlightsCtrl),
+
+              /// Challenges
+              buildTextField("Challenges Faced", controller.challengesCtrl),
+
+              /// Location
+              buildTextField("Location", controller.locationCtrl),
+
+              /// Client Type
+              buildTextField("Client Type", controller.clientTypeCtrl),
+
+              /// Video Link
+              buildTextField("Video Link", controller.videoLinkCtrl),
+
+              /// Self Note
+              buildTextField("Self Note", controller.selfNoteCtrl,
+                  maxLines: 2),
+
+              /// Date Picker
+              Obx(() {
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    controller.selectedDate.value == null
+                        ? "Select Date"
+                        : "Date: ${controller.selectedDate.value!.toLocal().toString().substring(0, 10)}",
+                    style: TextStyle(fontSize: 14.sp),
+                  ),
+                  trailing: Icon(Icons.calendar_today),
+                  onTap: () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate:
+                          controller.selectedDate.value ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      controller.selectedDate.value = picked;
                     }
-                    return null;
                   },
-                  decoration: inputDecoration(primaryColor, context).copyWith(
-                    labelText: "add_portfolio_title_label".tr,
-                    labelStyle: TextStyle(
-                      fontSize: 14.sp,
+                );
+              }),
+
+              SizedBox(height: 12.h),
+
+              /// Image Picker
+              Text("Images",
+                  style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                    ),
+                      fontSize: 14.sp,
+                      color: primaryColor)),
+              SizedBox(height: 8.h),
+              GestureDetector(
+                onTap: controller.pickImage,
+                child: Container(
+                  height: 100.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Center(
+                    child: Icon(Icons.add_a_photo, color: Colors.grey),
                   ),
                 ),
-                SizedBox(height: 16.h),
-
-                /// Description
-                TextFormField(
-                  controller: controller.descCtrl,
-                  maxLines: 3,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "add_portfolio_desc_required".tr;
-                    }
-                    return null;
-                  },
-                  decoration: inputDecoration(primaryColor, context).copyWith(
-                    labelText: "add_portfolio_desc_label".tr,
-                    labelStyle: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 24.h),
-                Text(
-                          "Service Categories *",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
-                            color: primaryColor,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Obx(() {
-                        
-                            return MultiSelectDialogField<String>(
-                              items: controller.serviceNames
-                                  .map((name) => MultiSelectItem<String>(name, name))
-                                  .toList(),
-                              initialValue: controller.selectedServiceNames,
-                              searchable: true,
-                              listType: MultiSelectListType.LIST,
-                              selectedColor: primaryColor,
-                              chipDisplay: MultiSelectChipDisplay(
-                                textStyle: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp,
-                                ),
-                                chipColor: primaryColor,
-                                onTap: (value) {
-                                  controller.selectedServiceNames.remove(value);
-                                },
-                              ),
+              ),
+              Obx(() => controller.imageFiles.isEmpty
+                  ? SizedBox.shrink()
+                  : Wrap(
+                      spacing: 8,
+                      children: List.generate(
+                          controller.imageFiles.length, (index) {
+                        return Stack(
+                          children: [
+                            Container(
+                              width: 80.w,
+                              height: 80.h,
+                              margin: EdgeInsets.only(top: 8.h),
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1.w,
+                                borderRadius: BorderRadius.circular(10.r),
+                                image: DecorationImage(
+                                  image: FileImage(
+                                      controller.imageFiles[index]),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              buttonIcon: Icon(
-                                Icons.add,
-                                color: primaryColor,
-                              ),
-                              buttonText: Text(
-                                "Select Services",
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 14.sp,
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () =>
+                                    controller.removeImage(index),
+                                child: CircleAvatar(
+                                  radius: 10.r,
+                                  backgroundColor: Colors.black,
+                                  child: Icon(Icons.close,
+                                      color: Colors.white, size: 14),
                                 ),
                               ),
-                              onConfirm: (values) {
-                                controller.selectedServiceNames.value = values;
-                              },
-                              validator: (values) {
-                                if (values == null || values.isEmpty) {
-                                  return "At least one service is required";
-                                }
-                                return null;
-                              },
-                            );
-                          }
-                        ),
-                        SizedBox(height: 12.h),
-                /// Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Get.back(),
-                      child: Text(
-                        "add_portfolio_cancel".tr,
-                        style: TextStyle(fontSize: 14.sp),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Obx(
-                      () => ElevatedButton(
+                            )
+                          ],
+                        );
+                      }),
+                    )),
+
+              SizedBox(height: 16.h),
+
+              /// Submit Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text("Cancel"),
+                  ),
+                  Obx(() => ElevatedButton(
+                        onPressed: controller.addPortfolio,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 24.w,
-                            vertical: 12.h,
-                          ),
+                              borderRadius: BorderRadius.circular(8.r)),
                         ),
-                        onPressed: controller.addPortfolio,
-                        child:controller.addPortfolioLoading.value ? CircularProgressIndicator() : Text(
-                          "add_portfolio_save".tr,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                        child: controller.addPortfolioLoading.value
+                            ? SizedBox(
+                                height: 16.h,
+                                width: 16.h,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2))
+                            : Text("Save Portfolio",
+                                style: TextStyle(color: Colors.white)),
+                      )),
+                ],
+              )
+            ],
           ),
         ),
       ),
     );
   }
 
-  InputDecoration inputDecoration(Color primaryColor, BuildContext context) =>
-      InputDecoration(
-        filled: true,
-        fillColor: Colors.grey.shade100,
-        hintStyle: TextStyle(
-          color: Colors.grey.shade500,
-          fontSize: 14.sp,
+  Widget buildTextField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+    void Function(String)? onChanged,
+    TextInputType inputType = TextInputType.text,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: TextFormField(
+        controller: controller,
+        onChanged: onChanged,
+        keyboardType: inputType,
+        maxLines: maxLines,
+        validator: (val) =>
+            val == null || val.trim().isEmpty ? "$label is required" : null,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey.shade100,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r)),
         ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 16.h,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(
-            color: Colors.grey.shade300,
-            width: 1.w,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(
-            color: primaryColor,
-            width: 1.5.w,
-          ),
-        ),
-      );
+      ),
+    );
+  }
 }

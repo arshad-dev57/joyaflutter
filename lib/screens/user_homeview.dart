@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:get/get.dart';
+import 'package:joya_app/controllers/services_controller.dart';
+import 'package:joya_app/models/servides_model.dart';
 import 'package:joya_app/screens/all_vendors_screen.dart';
 import 'package:joya_app/screens/usser_profile_screen.dart';
 import 'package:joya_app/utils/colors.dart';
@@ -9,101 +11,76 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
-
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-
-  final List<String> carouselImages = [
-    'https://picsum.photos/id/1018/800/400',
-    'https://picsum.photos/id/1023/800/400',
-    'https://picsum.photos/id/1025/800/400',
-  ];
   String? userCountry;
+  final servicecontroller = Get.put(ServicesController());
+  @override
+  void initState() {
+    super.initState();
+    loadCountry();
+    servicecontroller.fetchServices();
+  }
 
-  final List<GridItem> gridItems = [
-    GridItem(
-      title: "photography".tr,
-      imageUrl: "https://picsum.photos/id/100/400/400",
-    ),
-    GridItem(
-      title: "event_planning".tr,
-      imageUrl: "https://picsum.photos/id/101/400/400",
-    ),
-    GridItem(
-      title: "designer".tr,
-      imageUrl: "https://picsum.photos/id/102/400/400",
-    ),
-    GridItem(
-      title: "catering".tr,
-      imageUrl: "https://picsum.photos/id/103/400/400",
-    ),
-  ];
+  Future<void> loadCountry() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? countries = prefs.getString('country');
+    userCountry = countries?.isNotEmpty == true ? countries : 'Unknown';
+    setState(() {});
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
-Future<void> loadCountry() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? countries = prefs.getString('country');
 
-    if (countries != null && countries.isNotEmpty) {
-      setState(() {
-        userCountry = countries;
-      });
-    } else {
-      setState(() {
-        userCountry = 'Unknown';
-      });
-    }
-  }
-@override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    loadCountry();
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFFF6F7FA),
       body: _selectedIndex == 0 ? buildHomeContent() : UserProfileScreen(),
-      bottomNavigationBar: Container(
+      bottomNavigationBar: buildBottomNavBar(),
+    );
+  }
+
+  Widget buildBottomNavBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.r),
           color: Colors.white,
+          borderRadius: BorderRadius.circular(30.r),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.shade300,
-              blurRadius: 8.r,
-              offset: Offset(0, -4.h),
-            ),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            )
           ],
         ),
-        child: Padding(
-          padding: EdgeInsets.all(8.r),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30.r),
           child: BottomNavigationBar(
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white70,
-            backgroundColor: primaryColor,
-            iconSize: 24.sp,
-            selectedFontSize: 14.sp,
-            unselectedFontSize: 14.sp,
-            items: [
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            selectedItemColor: primaryColor,
+            unselectedItemColor: Colors.grey.shade600,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined, size: 24.sp),
-                label: "home".tr,
+                icon: Icon(Icons.home_outlined),
+                label: '',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline, size: 24.sp),
-                label: "profile".tr,
+                icon: Icon(Icons.person_outline),
+                label: '',
               ),
             ],
           ),
@@ -111,179 +88,277 @@ Future<void> loadCountry() async {
       ),
     );
   }
-
   Widget buildHomeContent() {
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 10.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Image.asset(
-                  "joya.png",
-                  width: 50.w,
-                  height: 50.h,
-                ),
-                Text(
-                  "joya_app".tr,
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(8.r),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      "assets/user.jpg",
-                      fit: BoxFit.cover,
-                      height: 30.h,
-                      width: 30.w,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          SizedBox(height: 16.h),
+          buildTopBar(),
           SizedBox(height: 20.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Text(
-              "ads".tr,
-              style: TextStyle(
-                color: primaryColor,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          SizedBox(height: 20.h),
-          CarouselSlider(
-            options: CarouselOptions(
-              height: 180.h,
-              autoPlay: true,
-              enlargeCenterPage: true,
-              viewportFraction: 0.9,
-              aspectRatio: 16 / 9,
-              autoPlayInterval: Duration(seconds: 3),
-            ),
-            items: carouselImages
-                .map((url) => ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: Image.network(
-                        url,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      ),
-                    ))
-                .toList(),
-          ),
-          SizedBox(height: 20.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Text(
-              "services".tr,
-              style: TextStyle(
-                color: primaryColor,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16.w,
-                mainAxisSpacing: 16.h,
-                childAspectRatio: 0.85,
-              ),
-              itemCount: gridItems.length,
-              itemBuilder: (context, index) {
-                final item = gridItems[index];
-                return _buildGridItem(item);
-              },
-            ),
-          ),
-          SizedBox(height: 20.h),
+          buildAdsSection(),
+          SizedBox(height: 24.h),
+          buildServicesSection(),
         ],
       ),
     );
   }
 
-  Widget _buildGridItem(GridItem item) {
-    return InkWell(
-      onTap: () {
-        Get.to(() => AllVendorsScreen(
-          country: userCountry!,
-          service: item.title,
-        ));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.r),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 8.r,
-              offset: Offset(0, 4.h),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(12.r),
-                ),
-                child: Image.network(
-                  item.imageUrl,
-                  fit: BoxFit.cover,
-                ),
+  Widget buildTopBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child:  
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                 Column(
+                   children: [
+                     Text("Hii, Arshad",style: TextStyle(fontSize: 30.sp,fontWeight: FontWeight.w400),),
+                      SizedBox(width: 160.w),
+                 Text("Elevate Your Business with Joya",style: TextStyle(fontSize: 10.sp,fontWeight: FontWeight.w300),),
+                   ],
+                 ),
+                
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    radius: 20.r,
+                    child: ClipOval(
+                      child: Image.asset(
+                        "assets/user.jpg",
+                        fit: BoxFit.cover,
+                        height: 30.h,
+                        width: 30.w,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            Container(
-              padding: EdgeInsets.all(12.r),
-              decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(12.r),
-                ),
-              ),
+    );
+  }
+
+  Widget buildAdsSection() {
+    return Obx(() {
+      if (servicecontroller.adsList.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Container(
+            height: 180.h,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Center(
               child: Text(
-                item.title,
-                textAlign: TextAlign.center,
+                "No Ads Available",
                 style: TextStyle(
-                  color: primaryColor,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
                   fontSize: 16.sp,
                 ),
               ),
-            )
+            ),
+          ),
+        );
+      }
+
+      return CarouselSlider(
+        options: CarouselOptions(
+          height: 180.h,
+          autoPlay: true,
+          enlargeCenterPage: true,
+          viewportFraction: 0.9,
+          autoPlayInterval: Duration(seconds: 3),
+        ),
+        items: servicecontroller.adsList.map(
+          (ad) {
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  )
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Image.network(
+                  ad.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                ),
+              ),
+            );
+          },
+        ).toList(),
+      );
+    });
+  }
+
+  Widget buildServicesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+  padding: EdgeInsets.symmetric(horizontal: 12.w),
+  child: Align(
+    alignment: Alignment.centerLeft,
+    child: Text("Services".tr,style: TextStyle(fontSize: 30.sp,fontWeight: FontWeight.w400),)),
+),
+
+        SizedBox(height: 16.h),
+        Obx(() {
+          if (servicecontroller.servicesList.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.r),
+                child: CircularProgressIndicator(color: primaryColor),
+              ),
+            );
+          }
+
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: servicecontroller.servicesList.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.w,
+                mainAxisSpacing: 16.h,
+                childAspectRatio: 0.8,
+              ),
+              itemBuilder: (context, index) {
+                final item = servicecontroller.servicesList[index];
+                return _buildGridItem(item);
+              },
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+Widget _buildGridItem(ServiceModel item) {
+  return InkWell(
+    onTap: () {
+      Get.to(() => AllVendorsScreen(
+            country: userCountry!,
+            service: item.title,
+          ));
+    },
+    child: Container(
+      width: 120.w,
+      height: 160.h,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 8.r,
+            offset: Offset(0, 4.h),
+          )
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: Stack(
+  children: [
+    // Background Image
+    Positioned.fill(
+      child: Image.network(
+        item.imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.white,
+          child: Icon(Icons.broken_image, color: Colors.grey),
+        ),
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            color: Colors.grey.shade100,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        },
+      ),
+    ),
+
+    // Gradient Overlay
+    Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.transparent,
+              Colors.black.withOpacity(0.6),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+      ),
+    ),
+
+    // 🔹 Top-right Vendor Count Badge
+    Positioned(
+      top: 8.r,
+      right: 8.r,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          // color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: Colors.black12),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.black12,
+          //     blurRadius: 4,
+          //     offset: Offset(0, 2),
+          //   )
+          // ],
+        ),
+        child: Text(
+          "${item.vendorCount} vendors",
+          style: TextStyle(
+            fontSize: 10.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+    ),
+
+    // Title at bottom
+    Positioned(
+      left: 8.r,
+      right: 8.r,
+      bottom: 12.r,
+      child: Text(
+        item.title,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14.sp,
+          shadows: [
+            Shadow(
+              color: Colors.black45,
+              offset: Offset(0, 1),
+              blurRadius: 2,
+            ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  ],
+),
+
+      ),
+    ),
+  );
 }
-
-class GridItem {
-  final String title;
-  final String imageUrl;
-
-  GridItem({required this.title, required this.imageUrl});
 }

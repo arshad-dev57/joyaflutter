@@ -1,3 +1,5 @@
+import 'package:joya_app/models/portfolio_model.dart';
+
 class VendorModel {
   final String id;
   final String firstname;
@@ -12,6 +14,8 @@ class VendorModel {
   final List<String> services;
   final List<SocialLink> urls;
   final String createdBy;
+  final List<String> portfolios; // only IDs (optional)
+  final List<PortfolioModel> linkedPortfolios; // embedded portfolios
 
   VendorModel({
     required this.id,
@@ -27,9 +31,10 @@ class VendorModel {
     required this.services,
     required this.urls,
     required this.createdBy,
+    required this.portfolios,
+    required this.linkedPortfolios,
   });
 
-  /// fromJson
   factory VendorModel.fromJson(Map<String, dynamic> json) {
     return VendorModel(
       id: json["_id"] ?? "",
@@ -48,6 +53,48 @@ class VendorModel {
               .toList() ??
           [],
       createdBy: json["createdBy"] ?? "",
+      portfolios: List<String>.from(json["portfolios"] ?? []),
+      linkedPortfolios: (json["linkedPortfolios"] as List<dynamic>?)
+              ?.map((e) => PortfolioModel.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+
+  // ✅ NEW: copyWith for updating specific fields
+  VendorModel copyWith({
+    String? id,
+    String? firstname,
+    String? lastname,
+    String? username,
+    String? email,
+    String? phoneNumber,
+    String? code,
+    String? country,
+    String? description,
+    String? image,
+    List<String>? services,
+    List<SocialLink>? urls,
+    String? createdBy,
+    List<String>? portfolios,
+    List<PortfolioModel>? linkedPortfolios,
+  }) {
+    return VendorModel(
+      id: id ?? this.id,
+      firstname: firstname ?? this.firstname,
+      lastname: lastname ?? this.lastname,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      code: code ?? this.code,
+      country: country ?? this.country,
+      description: description ?? this.description,
+      image: image ?? this.image,
+      services: services ?? this.services,
+      urls: urls ?? this.urls,
+      createdBy: createdBy ?? this.createdBy,
+      portfolios: portfolios ?? this.portfolios,
+      linkedPortfolios: linkedPortfolios ?? this.linkedPortfolios,
     );
   }
 }

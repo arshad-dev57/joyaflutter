@@ -1,8 +1,9 @@
 import 'package:get/get.dart';
+import 'package:joya_app/screens/admin_home_view.dart';
 import 'package:joya_app/screens/login_screnn.dart';
 import 'package:joya_app/screens/user_homeview.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:joya_app/screens/vendor_homeview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashController extends GetxController {
   @override
@@ -23,6 +24,8 @@ class SplashController extends GetxController {
     } else {
       if (role == 'vendor') {
         Get.offAll(() => VendorHomeScreen());
+      } else if (role == 'admin') {
+        Get.to(AdminDashboardScreen());
       } else {
         Get.offAll(() => HomeScreen());
       }

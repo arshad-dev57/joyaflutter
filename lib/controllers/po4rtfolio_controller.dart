@@ -6,72 +6,63 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:joya_app/models/portfolio_model.dart';
+import 'package:joya_app/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/portfolio_model.dart';
 
 class PortfolioController extends GetxController {
   final formKey = GlobalKey<FormState>();
   var portfolioloading = false.obs;
-
-  // For Mobile: store File list
-  var imageFiles = <io.File>[].obs;
-var addPortfolioLoading = false.obs;
+  var addPortfolioLoading = false.obs;
   var portfolioList = <PortfolioModel>[].obs;
-
-  // For Web: store bytes list
-  var imageBytesList = <Uint8List>[].obs;
-  var imageNames = <String>[].obs;
 
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
-  var selectedServiceNames = <String>[].obs;
-  var serviceNames = <String>[].obs;
 
+  RxList<String> serviceTypeList = <String>[].obs;
+
+  final highlightsCtrl = TextEditingController();
+  final challengesCtrl = TextEditingController();
+  final locationCtrl = TextEditingController();
+  final durationCtrl = TextEditingController();
+  final selfNoteCtrl = TextEditingController();
+  final videoLinkCtrl = TextEditingController();
+  final clientTypeCtrl = TextEditingController();
+
+  Rx<DateTime?> selectedDate = Rx<DateTime?>(null);
+  RxBool isPracticeProject = false.obs;
+  RxBool contactEnabled = true.obs;
+
+  var skillsUsed = <String>[].obs;
+  var equipmentUsed = <String>[].obs;
+
+  // NEW FIELDS
+  final numberOfProjectsCtrl = TextEditingController();
+
+  // timeEstimates
+  final minHoursCtrl = TextEditingController();
+  final maxHoursCtrl = TextEditingController();
+
+  // estimatedCostRange
+  final costMinCtrl = TextEditingController();
+  final costMaxCtrl = TextEditingController();
+  final currencyCtrl = TextEditingController(text: "USD");
+
+  // Image handling
+  var imageFiles = <io.File>[].obs;
+  var imageBytesList = <Uint8List>[].obs;
+  var imageNames = <String>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-            fetchServiceNames();
-
-    getPortfolios();
-
   }
-Future<void> fetchServiceNames() async {
-    try {
-      var url = Uri.parse('http://localhost:5000/api/services/getservices');
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        var jsonData = jsonDecode(response.body);
-        List<String> names = [];
-
-        for (var item in jsonData['data']) {
-          if (item['title'] != null) {
-            names.add(item['title'].toString());
-          }
-        }
-
-        serviceNames.value = names;
-
-        selectedServiceNames.value =
-            names.length >= 2 ? names.sublist(0, 2) : names;
-
-        print("Fetched service names: $serviceNames");
-        print("Initially selected services: $selectedServiceNames");
-      } else {
-        print("Failed to load service names. Status: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("Error fetching service names: $e");
-    }
-  }
-
 
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final pickedImages = await picker.pickMultiImage();
 
-    if (pickedImages != null && pickedImages.isNotEmpty) {
+    if (pickedImages.isNotEmpty) {
       if (kIsWeb) {
         for (var image in pickedImages) {
           Uint8List bytes = await image.readAsBytes();
@@ -92,115 +83,129 @@ Future<void> fetchServiceNames() async {
       imageFiles.removeAt(index);
     }
   }
-Future<void> addPortfolio() async {
-  addPortfolioLoading.value = true;
-  if (!formKey.currentState!.validate()) return;
 
-  try {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+  Future<void> addPortfolio() async {
+    if (!formKey.currentState!.validate()) return;
 
-    portfolioloading.value = true;
+    addPortfolioLoading.value = true;
 
-    var uri = Uri.parse("http://localhost:5000/api/portfolios/createportfolio");
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
 
-    var request = http.MultipartRequest("POST", uri);
-    request.headers['Authorization'] = "Bearer ${token!}";
+      var uri = Uri.parse("$baseUrl/portfolios/createportfolio");
+      var request = http.MultipartRequest("POST", uri);
+      request.headers['Authorization'] = "Bearer ${token!}";
 
-    request.fields['title'] = titleCtrl.text;
-    request.fields['description'] = descCtrl.text;
+      request.fields['title'] = titleCtrl.text;
+      request.fields['description'] = descCtrl.text;
 
-    // ✅ send services list
-    request.fields['services'] = jsonEncode(selectedServiceNames);
+      /// ✅ Serialize serviceType list
+      request.fields['serviceType'] = jsonEncode(serviceTypeList);
 
-    if (kIsWeb) {
-      for (int i = 0; i < imageBytesList.length; i++) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
+      request.fields['skillsUsed'] = jsonEncode(skillsUsed);
+      request.fields['highlights'] = highlightsCtrl.text;
+      request.fields['challengesFaced'] = challengesCtrl.text;
+      request.fields['location'] = locationCtrl.text;
+      request.fields['duration'] = durationCtrl.text;
+      request.fields['selfNote'] = selfNoteCtrl.text;
+      request.fields['clientType'] = clientTypeCtrl.text;
+      request.fields['equipmentUsed'] = jsonEncode(equipmentUsed);
+      request.fields['videoLinks'] = jsonEncode([videoLinkCtrl.text]);
+      request.fields['contactEnabled'] = contactEnabled.value.toString();
+      request.fields['isPracticeProject'] = isPracticeProject.value.toString();
+
+      if (selectedDate.value != null) {
+        request.fields['date'] = selectedDate.value!.toIso8601String();
+      }
+
+      // NEW FIELDS:
+      if (numberOfProjectsCtrl.text.isNotEmpty) {
+        request.fields['numberOfProjects'] = numberOfProjectsCtrl.text;
+      }
+
+      request.fields['timeEstimates'] = jsonEncode({
+        "minHours": int.tryParse(minHoursCtrl.text) ?? 1,
+        "maxHours": int.tryParse(maxHoursCtrl.text) ?? 10,
+      });
+
+      request.fields['estimatedCostRange'] = jsonEncode({
+        "min": double.tryParse(costMinCtrl.text) ?? 0.0,
+        "max": double.tryParse(costMaxCtrl.text) ?? 0.0,
+        "currency": currencyCtrl.text,
+      });
+
+      // Attach images
+      if (kIsWeb) {
+        for (int i = 0; i < imageBytesList.length; i++) {
+          request.files.add(http.MultipartFile.fromBytes(
             'images',
             imageBytesList[i],
             filename: imageNames[i],
-          ),
-        );
+          ));
+        }
+      } else {
+        for (var file in imageFiles) {
+          request.files.add(await http.MultipartFile.fromPath('images', file.path));
+        }
       }
-    } else {
-      for (var file in imageFiles) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'images',
-            file.path,
-          ),
-        );
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 201) {
+        
+        Get.back();
+        Get.snackbar("Success", "Portfolio created!");
+      } else {
+        Get.snackbar("Error", "Failed to create portfolio");
+        print(response.body);
       }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      addPortfolioLoading.value = false;
     }
-
-    var streamedResponse = await request.send();
-    var response = await http.Response.fromStream(streamedResponse);
-
-    print("Status code: ${response.statusCode}");
-    print("Response body: ${response.body}");
-
-    if (response.statusCode == 201) {
-      var jsonResponse = json.decode(response.body);
-      var portfolio = PortfolioModel.fromJson(jsonResponse['data']);
-
-      Get.back();
-      Get.snackbar("Success", "Portfolio created!");
-      getPortfolios();
-      print(portfolio.images);
-    } else {
-      Get.snackbar("Error", "Failed to create portfolio");
-    }
-  } catch (e) {
-    print("Error: $e");
-    Get.snackbar("Error", e.toString());
-  } finally {
-    addPortfolioLoading.value = false;
   }
-}
 
-  Future<void> getPortfolios() async {
+ Future<void> getPortfolios(String serviceType) async {
+  // 👉 First handle empty service case
+  if (serviceType.isEmpty) {
+    portfolioList.clear();
+    return;
+  }
+
   try {
     portfolioloading.value = true;
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? authToken = prefs.getString('token');
-    if (authToken == null || authToken.isEmpty) {
-      Get.snackbar("Error", "Token not found. Please login again.");
-      return;
-    }
+    String? token = prefs.getString('token');
 
-    var url = Uri.parse("http://localhost:5000/api/portfolios/getportfolios");
+    final uri = Uri.parse(
+      "$baseUrl/portfolios/getportfolios?serviceType=$serviceType",
+    );
 
-    var response = await http.get(
-      url,
-      headers: {
-        "Authorization": "Bearer $authToken",
-      },
+    final response = await http.get(
+      uri,
+      headers: {"Authorization": "Bearer $token"},
     );
 
     if (response.statusCode == 200) {
-      var jsonResponse = json.decode(response.body);
-      List<dynamic> list = jsonResponse['data'];
-print("Sending services: ${jsonEncode(selectedServiceNames)}");
-
-      List<PortfolioModel> portfolios =
-          list.map((item) => PortfolioModel.fromJson(item)).toList();
-
-      portfolioList.value = portfolios;
-      print("Fetched portfolios: ${portfolioList.length}");
+      final body = json.decode(response.body);
+      portfolioList.value = (body['data'] as List)
+          .map((e) => PortfolioModel.fromJson(e))
+          .toList();
     } else {
+      print(response.body);
       Get.snackbar("Error", "Failed to fetch portfolios");
+      portfolioList.clear(); 
     }
   } catch (e) {
-    print("Error: $e");
+    print(e);
     Get.snackbar("Error", e.toString());
+    portfolioList.clear(); 
   } finally {
     portfolioloading.value = false;
   }
 }
-
-
-
 
 }

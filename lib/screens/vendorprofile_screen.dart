@@ -10,6 +10,8 @@ class vendorprofilescreen extends StatelessWidget {
   final String phone = "+1 201 555-0123";
   final String address = "70 Rainey Street, Apartment 146,\nAustin TX 78701";
 
+  const vendorprofilescreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Colors.black;

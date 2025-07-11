@@ -6,11 +6,15 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:joya_app/controllers/services_controller.dart';
+import 'package:joya_app/models/portfolio_model.dart';
 import 'package:joya_app/models/review_model.dart';
 import 'package:joya_app/models/vendormodel.dart';
+import 'package:joya_app/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:joya_app/controllers/services_controller.dart';
+
 class AllVendorsController extends GetxController {
   final formKey = GlobalKey<FormState>();
 
@@ -24,40 +28,38 @@ class AllVendorsController extends GetxController {
   final descriptionCtrl = TextEditingController();
   final firstNameCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
-var reviewloading = false.obs;
+  final passwordCtrl = TextEditingController();
+  var reviewloading = false.obs;
   var isSubmitting = false.obs;
-var vendors = <VendorModel>[].obs;
-var isLoadingVendors = false.obs;
-var reviewList = <ReviewModel>[].obs;
-var getReviewsLoading = false.obs;
+  var vendors = <VendorModel>[].obs;
+  var isLoadingVendors = false.obs;
+  var reviewList = <ReviewModel>[].obs;
   RxString language = "English".obs;
   RxString role = "Vendor".obs;
+  var submitloading = false.obs;
 
   Rx<File?> imageFile = Rx<File?>(null);
   Rx<Uint8List?> imageBytes = Rx<Uint8List?>(null);
-  RxString imageBase64 = "".obs;
+
+  Rx<File?> socialImageFile = Rx<File?>(null);
+  Rx<Uint8List?> socialImageBytes = Rx<Uint8List?>(null);
+
   var urlLinks = <Map<String, dynamic>>[].obs;
   final socialNameCtrl = TextEditingController();
   final socialUrlCtrl = TextEditingController();
-  Rx<File?> socialImageFile = Rx<File?>(null);
-  Rx<Uint8List?> socialImageBytes = Rx<Uint8List?>(null);
-  RxString socialImageBase64 = "".obs;
 
-  /// Pick main vendor image (web or mobile)
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       if (kIsWeb) {
-        final bytes = await pickedFile.readAsBytes();
-        imageBytes.value = bytes;
-        imageBase64.value = base64Encode(bytes);
+        imageBytes.value = await pickedFile.readAsBytes();
+        imageFile.value = null;
+        print("[WEB] Picked image bytes length: ${imageBytes.value?.length}");
       } else {
-        final file = File(pickedFile.path);
-        imageFile.value = file;
-        final bytes = await file.readAsBytes();
-        imageBase64.value = base64Encode(bytes);
+        imageFile.value = File(pickedFile.path);
+        imageBytes.value = null;
+        print("[MOBILE] Picked image path: ${imageFile.value?.path}");
       }
     }
   }
@@ -65,23 +67,24 @@ var getReviewsLoading = false.obs;
   Future<void> pickSocialIconImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       if (kIsWeb) {
-        final bytes = await pickedFile.readAsBytes();
-        socialImageBytes.value = bytes;
-        socialImageBase64.value = base64Encode(bytes);
+        socialImageBytes.value = await pickedFile.readAsBytes();
+        socialImageFile.value = null;
+        print(
+          "[WEB] Picked social icon bytes length: ${socialImageBytes.value?.length}",
+        );
       } else {
-        final file = File(pickedFile.path);
-        socialImageFile.value = file;
-        final bytes = await file.readAsBytes();
-        socialImageBase64.value = base64Encode(bytes);
+        socialImageFile.value = File(pickedFile.path);
+        socialImageBytes.value = null;
+        print(
+          "[MOBILE] Picked social icon path: ${socialImageFile.value?.path}",
+        );
       }
     }
   }
 
-  /// Add one social link
-  void addSocialLink() async {
+  void addSocialLink() {
     if (socialNameCtrl.text.isEmpty ||
         socialUrlCtrl.text.isEmpty ||
         (kIsWeb
@@ -96,32 +99,21 @@ var getReviewsLoading = false.obs;
       return;
     }
 
-    String imageBase64Str;
-    if (kIsWeb) {
-      imageBase64Str = base64Encode(socialImageBytes.value!);
-    } else {
-      final bytes = await socialImageFile.value!.readAsBytes();
-      imageBase64Str = base64Encode(bytes);
-    }
-
     urlLinks.add({
       "name": socialNameCtrl.text.trim(),
       "url": socialUrlCtrl.text.trim(),
-      "image": imageBase64Str,
+      "file": kIsWeb ? socialImageBytes.value : socialImageFile.value,
     });
 
-    // Clear social link fields
     socialNameCtrl.clear();
     socialUrlCtrl.clear();
     socialImageFile.value = null;
     socialImageBytes.value = null;
-    socialImageBase64.value = "";
   }
 
-  /// Submit the vendor form to API
   Future<void> submit() async {
     if (!formKey.currentState!.validate()) {
-      print("Form invalid");
+      print("[Form Error] Form is invalid.");
       return;
     }
 
@@ -131,10 +123,23 @@ var getReviewsLoading = false.obs;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
 
-      var url = Uri.parse('http://localhost:5000/api/vendors/create');
+      if (token == null || token.isEmpty) {
+        print("[Token Error] Token is missing.");
+        Get.snackbar(
+          "Error",
+          "Login token not found",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
 
-      // Build payload
-      Map<String, dynamic> payload = {
+      final uri = Uri.parse('$baseUrl/vendors/create');
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add fields
+      final fields = {
         "firstname": firstNameCtrl.text.trim(),
         "lastname": lastNameCtrl.text.trim(),
         "username": usernameCtrl.text.trim(),
@@ -142,58 +147,96 @@ var getReviewsLoading = false.obs;
         "phone_number": phoneCtrl.text.trim(),
         "code": codeCtrl.text.trim(),
         "country": countryCtrl.text.trim(),
-        "description": descriptionCtrl.text.trim().isNotEmpty
-            ? descriptionCtrl.text.trim()
-            : null,
-        "services": serviceController.selectedServiceNames,
-        "url": urlLinks,
-        "image": imageBase64.value.isNotEmpty ? imageBase64.value : null,
+        "description": descriptionCtrl.text.trim(),
+        "services": jsonEncode(serviceController.selectedServiceNames),
+        'password' : passwordCtrl.text.trim(),
       };
 
-      // Remove null fields
-      payload.removeWhere((key, value) => value == null);
+      print("[DEBUG] Fields to be sent:");
+      fields.forEach((k, v) => print("  $k: $v"));
+      request.fields.addAll(fields);
 
-      /// ✅ SAFE PAYLOAD LOGGING
-      final payloadCopy = Map<String, dynamic>.from(payload);
+      // Prepare social links array
+      List<Map<String, dynamic>> socialLinks =
+          urlLinks.map((item) {
+            return {"name": item["name"], "url": item["url"]};
+          }).toList();
 
-      // Remove base64 image
-      payloadCopy.remove("image");
+      request.fields["url"] = jsonEncode(socialLinks);
+      print("[DEBUG] URL field: ${request.fields["url"]}");
 
-      if (payloadCopy.containsKey("url")) {
-        payloadCopy["url"] = (payloadCopy["url"] as List)
-            .map((item) {
-              final copy = Map<String, dynamic>.from(item);
-              copy.remove("image");
-              return copy;
-            })
-            .toList();
+      // Add main image
+      if (kIsWeb && imageBytes.value != null) {
+        print("[DEBUG] Attaching main image from bytes (web)...");
+        final multipartFile = http.MultipartFile.fromBytes(
+          'image',
+          imageBytes.value!,
+          filename: 'vendor_image_web.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        );
+        request.files.add(multipartFile);
+      } else if (!kIsWeb && imageFile.value != null) {
+        print("[DEBUG] Attaching main image from file (mobile)...");
+        request.files.add(
+          await http.MultipartFile.fromPath('image', imageFile.value!.path),
+        );
+      } else {
+        print("[DEBUG] No main image selected.");
       }
 
-      print("Safe Payload for debugging: ${jsonEncode(payloadCopy)}");
+      for (int i = 0; i < urlLinks.length; i++) {
+        var fileOrBytes = urlLinks[i]["file"];
+        if (fileOrBytes != null) {
+          if (kIsWeb && fileOrBytes is Uint8List) {
+            print("[DEBUG] Attaching social icon $i from bytes (web)");
+            final multipartFile = http.MultipartFile.fromBytes(
+              'social_images',
+              fileOrBytes,
+              filename: "social_$i.png",
+              contentType: MediaType('image', 'png'),
+            );
+            request.files.add(multipartFile);
+          } else if (!kIsWeb && fileOrBytes is File) {
+            print("[DEBUG] Attaching social icon $i from file (mobile)");
+            request.files.add(
+              await http.MultipartFile.fromPath(
+                'social_images',
+                fileOrBytes.path,
+                filename: "social_$i.png",
+              ),
+            );
+          } else {
+            print("[DEBUG] Social icon $i is missing or invalid.");
+          }
+        }
+      }
 
-      var response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(payload),
-      );
+      print("[DEBUG] Sending request...");
+      final response = await request.send();
+
+      final responseBody = await response.stream.bytesToString();
+      print("[DEBUG] Response status: ${response.statusCode}");
+      print("[DEBUG] Response body: $responseBody");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        var jsonData = jsonDecode(response.body);
-        if (jsonData["success"] == true) {
+        final decoded = jsonDecode(responseBody);
+        if (decoded["success"] == true) {
+            String newVendorId = decoded['data']['createdBy'];
+            print("New Vendor ID: $newVendorId");
+prefs.setString('vendorId', newVendorId);
           Get.snackbar(
             "Success",
-            jsonData["message"] ?? "Vendor created successfully",
+            decoded["message"] ?? "Vendor created",
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
+          await Future.delayed(const Duration(seconds: 2));
+          Get.back();
           clearForm();
         } else {
           Get.snackbar(
             "Error",
-            jsonData["message"] ?? "Something went wrong",
+            decoded["message"] ?? "Something went wrong",
             backgroundColor: Colors.red,
             colorText: Colors.white,
           );
@@ -201,20 +244,20 @@ var getReviewsLoading = false.obs;
       } else {
         Get.snackbar(
           "Error",
-          "Failed to create vendor. Status: ${response.statusCode}",
+          "Failed. Status: ${response.statusCode}",
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        print("Failed Response: ${response.body}");
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print("[Exception] $e");
+      print("[StackTrace] $stack");
       Get.snackbar(
         "Error",
         e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      print("Exception: $e");
     } finally {
       isSubmitting.value = false;
     }
@@ -233,65 +276,419 @@ var getReviewsLoading = false.obs;
     urlLinks.clear();
     imageFile.value = null;
     imageBytes.value = null;
-    imageBase64.value = "";
     socialNameCtrl.clear();
     socialUrlCtrl.clear();
     socialImageFile.value = null;
     socialImageBytes.value = null;
-    socialImageBase64.value = "";
   }
 
   Future<void> fetchVendors({
-  required String country,
-  required String service,
-}) async {
-  try {
-    isLoadingVendors.value = true;
+    required String country,
+    required String service,
+  }) async {
+    try {
+      isLoadingVendors.value = true;
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
 
-    final url = Uri.parse(
-      'http://localhost:5000/api/vendors/getmyvendors?service=$service&country=$country',
-    );
+      final url = Uri.parse(
+        '$baseUrl/vendors/getmyvendors?service=$service&country=$country',
+      );
+      print("url: $url");
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      if (jsonData["success"] == true) {
-        final List data = jsonData["data"];
-print("Fetched ${data.length} vendors from server.");
-        vendors.value = data
-            .map((item) => VendorModel.fromJson(item))
-            .toList();
-
-        print("Fetched ${vendors.length} vendors from server.");
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData["success"] == true) {
+          final List data = jsonData["data"];
+          vendors.value =
+              data.map((item) => VendorModel.fromJson(item)).toList();
+          print("vendors: $vendors");
+          print("Fetched ${vendors.length} vendors from server.");
+        } else {
+          print("Failed to fetch vendors. Status: ${response.statusCode}");
+          Get.snackbar(
+            "Error",
+            jsonData["message"] ?? "Something went wrong",
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
       } else {
         print("Failed to fetch vendors. Status: ${response.statusCode}");
         Get.snackbar(
           "Error",
-          jsonData["message"] ?? "Something went wrong",
+          "Failed to fetch vendors. Status: ${response.statusCode}",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print("Fetch Vendors Exception: $e");
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingVendors.value = false;
+    }
+  }
+
+  Future<void> addReview({
+    required String vendorId,
+    required String comment,
+    required int rating,
+  }) async {
+    try {
+      reviewloading.value = true;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "Token missing. Please login again.",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      var url = Uri.parse('$baseUrl/reviews/create');
+
+      var body = jsonEncode({
+        "vendorId": vendorId,
+        "comment": comment,
+        "rating": rating,
+      });
+
+      var response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: body,
+      );
+
+      print("Status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 201) {
+        var jsonData = jsonDecode(response.body);
+        var review = ReviewModel.fromJson(jsonData["data"]);
+        print("Review Added => ${review.comment}");
+        Get.snackbar(
+          "Success",
+          "Review added successfully!",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        getReviews(vendorId);
+      } else {
+        Get.snackbar(
+          "Error",
+          "Failed to add review",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print("Error while adding review: $e");
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      reviewloading.value = false;
+    }
+  }
+
+  Future<void> getReviews(String vendorId) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      final url = Uri.parse('$baseUrl/reviews/$vendorId');
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        List data = jsonResponse["data"];
+
+        List<ReviewModel> reviews =
+            data.map((item) => ReviewModel.fromJson(item)).toList();
+
+        reviewList.value = reviews;
+        print("Fetched ${reviews.length} reviews");
+      } else {
+        print("Failed to fetch reviews. Status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error while fetching reviews: $e");
+    }
+  }
+
+  Future<void> fetchAllVendors() async {
+    try {
+      isLoadingVendors.value = true;
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      final url = Uri.parse('$baseUrl/vendors/getallvendors');
+
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData["success"] == true) {
+          final List data = jsonData["data"];
+          vendors.value =
+              data.map((item) => VendorModel.fromJson(item)).toList();
+
+          print("Fetched all ${vendors.length} vendors.");
+        } else {
+          Get.snackbar(
+            "Error",
+            jsonData["message"] ?? "Something went wrong",
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          print("Failed to fetch vendors: ${jsonData["message"]}");
+        }
+      } else {
+        Get.snackbar(
+          "Error",
+          "Failed to fetch vendors. Status: ${response.statusCode}",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        print("Failed to fetch vendors. Status: ${response.statusCode}");
+        print("Response body: ${response.body}");
+      }
+    } catch (e) {
+      print("Exception in fetchAllVendors: $e");
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingVendors.value = false;
+    }
+  }
+
+  Future<void> updateVendor(String vendorId) async {
+    if (!formKey.currentState!.validate()) {
+      print("[Form Error] Form is invalid.");
+      return;
+    }
+
+    isSubmitting.value = true;
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "Login token not found",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final uri = Uri.parse('$baseUrl/vendors/update/$vendorId');
+      final request = http.MultipartRequest('PUT', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+
+      final fields = {
+        "firstname": firstNameCtrl.text.trim(),
+        "lastname": lastNameCtrl.text.trim(),
+        "username": usernameCtrl.text.trim(),
+        "email": emailCtrl.text.trim(),
+        "phone_number": phoneCtrl.text.trim(),
+        "code": codeCtrl.text.trim(),
+        "country": countryCtrl.text.trim(),
+        "description": descriptionCtrl.text.trim(),
+        "services": jsonEncode(serviceController.selectedServiceNames),
+      };
+
+      request.fields.addAll(fields);
+
+      // Prepare social links
+      List<Map<String, dynamic>> socialLinks =
+          urlLinks.map((item) {
+            return {
+              "name": item["name"],
+              "url": item["url"],
+              "_id": item["_id"], // keep existing _id for updates
+            };
+          }).toList();
+
+      request.fields["url"] = jsonEncode(socialLinks);
+
+      // Add main image
+      if (kIsWeb && imageBytes.value != null) {
+        final multipartFile = http.MultipartFile.fromBytes(
+          'image',
+          imageBytes.value!,
+          filename: 'vendor_image_web.jpg',
+          contentType: MediaType('image', 'jpeg'),
+        );
+        request.files.add(multipartFile);
+      } else if (!kIsWeb && imageFile.value != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('image', imageFile.value!.path),
+        );
+      }
+
+      // Add social icons
+      for (int i = 0; i < urlLinks.length; i++) {
+        var fileOrBytes = urlLinks[i]["file"];
+        if (fileOrBytes != null) {
+          if (kIsWeb && fileOrBytes is Uint8List) {
+            final multipartFile = http.MultipartFile.fromBytes(
+              'social_images',
+              fileOrBytes,
+              filename: "social_$i.png",
+              contentType: MediaType('image', 'png'),
+            );
+            request.files.add(multipartFile);
+          } else if (!kIsWeb && fileOrBytes is File) {
+            request.files.add(
+              await http.MultipartFile.fromPath(
+                'social_images',
+                fileOrBytes.path,
+                filename: "social_$i.png",
+              ),
+            );
+          }
+        }
+      }
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      print("[DEBUG] Update Response status: ${response.statusCode}");
+      print("[DEBUG] Update Response body: $responseBody");
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(responseBody);
+        if (decoded["success"] == true) {
+          Get.snackbar(
+            "Success",
+            decoded["message"] ?? "Vendor updated",
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+          await Future.delayed(const Duration(seconds: 2));
+          Get.back();
+          clearForm();
+        } else {
+          Get.snackbar(
+            "Error",
+            decoded["message"] ?? "Something went wrong",
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        Get.snackbar(
+          "Error",
+          "Failed. Status: ${response.statusCode}",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e, stack) {
+      print("[Exception] $e");
+      print("[StackTrace] $stack");
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  var userPortfolios = [].obs;
+  var loadingPortfolios = false.obs;
+
+  Future<void> fetchUserPortfolios() async {
+  try {
+    loadingPortfolios.value = true;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    final url = Uri.parse('$baseUrl/portfolios/getallportfolios');
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = jsonDecode(response.body);
+      if (jsonData["success"] == true) {
+        List portfoliosRaw = jsonData["data"];
+
+        userPortfolios.value = portfoliosRaw.map((item) {
+          return {
+            "title": item["title"] ?? "",
+            "id": item["_id"] ?? "",
+            "image": (item["images"] != null && item["images"].isNotEmpty)
+                ? item["images"][0]
+                : "",
+          };
+        }).toList();
+
+        print("🔎 Fetched ${userPortfolios.length} portfolios:");
+        userPortfolios.forEach((p) {
+          print("🆔 ID: ${p["id"]}");
+          print("📛 Title: ${p["title"]}");
+          print("🖼️ Image: ${p["image"]}");
+          print("----------------------");
+        });
+      } else {
+        Get.snackbar(
+          "Error",
+          jsonData["message"] ?? "Failed to fetch portfolios",
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
       }
     } else {
-      print("Failed to fetch vendors. Status: ${response.statusCode}");
       Get.snackbar(
         "Error",
-        "Failed to fetch vendors. Status: ${response.statusCode}",
+        "Failed to fetch portfolios. Status: ${response.statusCode}",
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
     }
   } catch (e) {
-    print("Fetch Vendors Exception: $e");
+    print("❌ Exception while fetching portfolios: $e");
     Get.snackbar(
       "Error",
       e.toString(),
@@ -299,113 +696,172 @@ print("Fetched ${data.length} vendors from server.");
       colorText: Colors.white,
     );
   } finally {
-    isLoadingVendors.value = false;
+    loadingPortfolios.value = false;
   }
 }
 
 
+  Future<void> linkPortfolioToVendor(
+      {
+      required String portfolioId,
+      required String vendorId,
+    }
+  ) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
 
-Future<void> addReview({
-  required String vendorId,
-  required String comment,
-  required int rating,
-}) async {
-  try {
-    reviewloading.value = true;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "Token missing. Please login again.",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
 
-    if (token == null || token.isEmpty) {
+      final url = Uri.parse('$baseUrl/vendors/linkportfolio');
+      var body = jsonEncode({
+        "portfolioId": portfolioId,
+        "vendorId": vendorId,
+      });
+
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData["success"] == true) {
+          // ✅ Update the vendor's linkedPortfolios in local vendors list
+          int index = vendors.indexWhere((v) => v.id == vendorId);
+          if (index != -1) {
+            vendors[index] = vendors[index].copyWith(
+              linkedPortfolios:
+                  (jsonData["data"] as List)
+                      .map((e) => PortfolioModel.fromJson(e))
+                      .toList(),
+            );
+            vendors.refresh();
+          }
+
+          Get.snackbar(
+            "Success",
+            "Portfolio linked successfully!",
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        } else {
+          Get.snackbar(
+            "Error",
+            jsonData["message"] ?? "Link failed",
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        Get.snackbar(
+          "Error",
+          "Link failed: ${response.statusCode}",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print("Exception: $e");
       Get.snackbar(
         "Error",
-        "Token missing. Please login again.",
+        e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      return;
     }
+  }
 
-    var url = Uri.parse('http://localhost:5000/api/reviews/create');
+  var linkedPortfolios = <PortfolioModel>[].obs;
+  var loadingLinkedPortfolios = false.obs;
+  Future<void> fetchLinkedPortfolios(String vendorId) async {
+    try {
+      loadingLinkedPortfolios.value = true;
 
-    var body = jsonEncode({
-      "vendorId": vendorId,
-      "comment": comment,
-      "rating": rating,
-    });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
 
-    var response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: body,
-    );
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          "Error",
+          "Token missing. Please login again.",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
 
-    print("Status code: ${response.statusCode}");
-    print("Response body: ${response.body}");
+      final url = Uri.parse('$baseUrl/vendors/getlinkedportfolios/$vendorId');
+      print("📌 Vendor ID: $vendorId");
+      print("🌐 URL: $url");
 
-    if (response.statusCode == 201) {
-      var jsonData = jsonDecode(response.body);
-      var review = ReviewModel.fromJson(jsonData["data"]);
-      print("Review Added => ${review.comment}");
-      Get.snackbar(
-        "Success",
-        "Review added successfully!",
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
       );
-    } else {
+
+      print("🔁 Response Status Code: ${response.statusCode}");
+      print("📦 Raw Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData["success"] == true && jsonData["data"] is List) {
+          final List portfoliosRaw = jsonData["data"];
+
+          linkedPortfolios.value =
+              portfoliosRaw
+                  .map<PortfolioModel>((item) => PortfolioModel.fromJson(item))
+                  .toList();
+
+          print("✅ Linked Portfolios Fetched: ${linkedPortfolios.length}");
+          for (var p in linkedPortfolios) {
+            print("• ID: ${p.id}");
+            print("• Title: ${p.title}");
+          }
+        } else {
+          print("❌ API responded with success=false or invalid data structure");
+          Get.snackbar(
+            "Error",
+            jsonData["message"] ?? "Invalid response format",
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        print("❌ HTTP Status Error: ${response.statusCode}");
+        print("❌ Response Body: ${response.body}");
+        Get.snackbar(
+          "Error",
+          "Failed to fetch linked portfolios. Status: ${response.statusCode}",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e, s) {
+      print("🔥 Exception in fetchLinkedPortfolios: $e");
+      print("📌 Stacktrace: $s");
       Get.snackbar(
         "Error",
-        "Failed to add review",
+        e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      loadingLinkedPortfolios.value = false;
     }
-  } catch (e) {
-    print("Error while adding review: $e");
-    Get.snackbar(
-      "Error",
-      e.toString(),
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-  } finally {
-    reviewloading.value = false;
   }
-}
-Future<void> getReviews(String vendorId) async {
-  try {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-
-    final url = Uri.parse('http://localhost:5000/api/reviews/$vendorId');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      var jsonResponse = json.decode(response.body);
-      List data = jsonResponse["data"];
-
-      List<ReviewModel> reviews = data
-          .map((item) => ReviewModel.fromJson(item))
-          .toList();
-
-      reviewList.value = reviews;
-      print("Fetched ${reviews.length} reviews");
-    } else {
-      print("Failed to fetch reviews. Status code: ${response.statusCode}");
-    }
-  } catch (e) {
-    print("Error while fetching reviews: $e");
-  }
-}
-
-
-
 }
