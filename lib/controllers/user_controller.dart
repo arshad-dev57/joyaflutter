@@ -11,7 +11,11 @@ class UsersController extends GetxController {
   var isLoading = false.obs;
   var searchQuery = ''.obs;
   var selectedRole = 'All'.obs;
-
+var totalUsers = 0.obs;
+var totalVendors = 0.obs;
+var totalServices = 0.obs;
+var totalAds = 0.obs;
+var totalPaymentLinks = 0.obs;
   @override
   void onInit() {
     super.onInit();
@@ -36,39 +40,39 @@ class UsersController extends GetxController {
     }).toList();
   }
 
-  Future<void> fetchAllUsers() async {
-    try {
-      isLoading.value = true;
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('token');
-
-      final response = await http.get(
-        Uri.parse('$baseUrl/users/getallusers'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body);
-        final List data = body['data'];
-
-        usersList.value =
-            data.map((user) => UserModel.fromJson(user)).toList();
-
-        filterUsers();
-      } else {
-        Get.snackbar('Error', 'Failed to load users');
-        print("Error: ${response.body}");
-      }
-    } catch (e) {
-      Get.snackbar('Exception', e.toString());
-      print("Exception: ${e.toString()}");
-    } finally {
-      isLoading.value = false;
+ Future<void> fetchAllUsers() async {
+  try {
+    isLoading.value = true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/getallusers'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      final List data = body['data'];
+      totalUsers.value = body['usercount'] ?? 0;
+      totalVendors.value = body['vendorcount'] ?? 0;
+      totalServices.value = body['servicescount'] ?? 0;
+      totalAds.value = body['adcount'] ?? 0;
+      totalPaymentLinks.value = body['paymentlinkcount'] ?? 0;
+      usersList.value = data.map((user) => UserModel.fromJson(user)).toList();
+      filterUsers();
+    } else {
+      Get.snackbar('Error', 'Failed to load users');
+      print("Error: ${response.body}");
     }
+  } catch (e) {
+    Get.snackbar('Exception', e.toString());
+    print("Exception: ${e.toString()}");
+  } finally {
+    isLoading.value = false;
   }
+}
 
  Future<void> deleteUser(String userId) async {
     try {
@@ -111,4 +115,45 @@ class UsersController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }}
+  }
+
+  Future<void> updateUserPaymentStatus(String userId, String paymentStatus) async {
+  try {
+    isLoading.value = true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/users/updatepaymentstatus'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'userId': userId,
+        'paymentStatus': paymentStatus, 
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      Get.snackbar(
+        'Success',
+        'Payment status updated to $paymentStatus.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      await fetchAllUsers();
+    } else {
+      final error = jsonDecode(response.body);
+      Get.snackbar('Error', error['message'] ?? 'Failed to update status');
+      print("Error: ${response.body}");
+    }
+  } catch (e) {
+    Get.snackbar('Error', e.toString());
+    print("Exception: ${e.toString()}");
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+  }

@@ -1,28 +1,29 @@
 class PortfolioModel {
-  String id;
-  String title;
-  String description;
-  List<String> images;
-  List<String> services;
-  String createdBy;
-  DateTime createdAt;
-  String? location;
-  String? duration;
-  List<String>? tags;
-  String? clientType;
-  List<String>? testimonials;
-  int? numberOfProjects;
-  TimeEstimates? timeEstimates;
-  CostRange? estimatedCostRange;
-  String? selfNote;
-  bool? isPracticeProject;
-  bool? contactEnabled;
-  List<String>? skillsUsed;
-  String? highlights;
-  String? challengesFaced;
-  DateTime? date;
-  List<String>? videoLinks;
-  List<String>? equipmentUsed;
+  final String id;
+  final String title;
+  final String description;
+  final List<String> images;
+  final List<String> services;
+  final String createdBy;
+  final DateTime createdAt;
+
+  final String? location;
+  final String? duration;
+  final List<String>? tags;
+  final String? clientType;
+  final List<String>? testimonials;
+  final int? numberOfProjects;
+  final TimeEstimates? timeEstimates;
+  final CostRange? estimatedCostRange;
+  final String? selfNote;
+  final bool? isPracticeProject;
+  final bool? contactEnabled;
+  final List<String>? skillsUsed;
+  final String? highlights;
+  final String? challengesFaced;
+  final DateTime? date;
+  final List<String>? videoLinks;
+  final List<String>? equipmentUsed;
 
   PortfolioModel({
     required this.id,
@@ -53,41 +54,34 @@ class PortfolioModel {
 
   factory PortfolioModel.fromJson(Map<String, dynamic> json) {
     return PortfolioModel(
-      id: json['_id'] ?? '',
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
+      id: json['_id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
       images: List<String>.from(json['images'] ?? []),
       services: List<String>.from(json['serviceType'] ?? []),
-      createdBy: json['createdBy'] ?? '',
+      createdBy: json['createdBy'] as String? ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      location: json['location'],
-      duration: json['duration'],
+      location: json['location'] as String?,
+      duration: json['duration'] as String?,
       tags: (json['tags'] as List?)?.map((e) => e.toString()).toList(),
-      clientType: json['clientType'],
-      testimonials: (json['testimonials'] as List?)
-          ?.map((e) => e.toString())
-          .toList(),
-      numberOfProjects: json['numberOfProjects'],
+      clientType: json['clientType'] as String?,
+      testimonials: (json['testimonials'] as List?)?.map((e) => e.toString()).toList(),
+      numberOfProjects: json['numberOfProjects'] as int?,
       timeEstimates: json['timeEstimates'] != null
-          ? TimeEstimates.fromJson(json['timeEstimates'])
+          ? TimeEstimates.fromJson(json['timeEstimates'] as Map<String, dynamic>)
           : null,
       estimatedCostRange: json['estimatedCostRange'] != null
-          ? CostRange.fromJson(json['estimatedCostRange'])
+          ? CostRange.fromJson(json['estimatedCostRange'] as Map<String, dynamic>)
           : null,
-      selfNote: json['selfNote'],
-      isPracticeProject: json['isPracticeProject'],
-      contactEnabled: json['contactEnabled'],
+      selfNote: json['selfNote'] as String?,
+      isPracticeProject: json['isPracticeProject'] as bool?,
+      contactEnabled: json['contactEnabled'] as bool?,
       skillsUsed: (json['skillsUsed'] as List?)?.map((e) => e.toString()).toList(),
-      highlights: json['highlights'],
-      challengesFaced: json['challengesFaced'],
-      date: json['date'] != null
-          ? DateTime.tryParse(json['date'])
-          : null,
-      videoLinks: (json['videoLinks'] as List?)
-          ?.map((e) => e.toString())
-          .toList(),
-      equipmentUsed:
-          (json['equipmentUsed'] as List?)?.map((e) => e.toString()).toList(),
+      highlights: json['highlights'] as String?,
+      challengesFaced: json['challengesFaced'] as String?,
+      date: json['date'] != null ? DateTime.tryParse(json['date']) : null,
+      videoLinks: (json['videoLinks'] as List?)?.map((e) => e.toString()).toList(),
+      equipmentUsed: (json['equipmentUsed'] as List?)?.map((e) => e.toString()).toList(),
     );
   }
 
@@ -122,8 +116,8 @@ class PortfolioModel {
 }
 
 class TimeEstimates {
-  int minHours;
-  int maxHours;
+  final int minHours;
+  final int maxHours;
 
   TimeEstimates({
     required this.minHours,
@@ -132,8 +126,8 @@ class TimeEstimates {
 
   factory TimeEstimates.fromJson(Map<String, dynamic> json) {
     return TimeEstimates(
-      minHours: json['minHours'] ?? 0,
-      maxHours: json['maxHours'] ?? 0,
+      minHours: json['minHours'] as int? ?? 0,
+      maxHours: json['maxHours'] as int? ?? 0,
     );
   }
 
@@ -146,9 +140,9 @@ class TimeEstimates {
 }
 
 class CostRange {
-  double min;
-  double max;
-  String currency;
+  final double min;
+  final double max;
+  final String currency;
 
   CostRange({
     required this.min,
@@ -160,13 +154,13 @@ class CostRange {
     return CostRange(
       min: (json['min'] is int
               ? (json['min'] as int).toDouble()
-              : (json['min'] as double?)) ??
+              : json['min'] as double?) ??
           0.0,
       max: (json['max'] is int
               ? (json['max'] as int).toDouble()
-              : (json['max'] as double?)) ??
+              : json['max'] as double?) ??
           0.0,
-      currency: json['currency'] ?? 'USD',
+      currency: json['currency'] as String? ?? 'USD',
     );
   }
 

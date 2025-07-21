@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:joya_app/controllers/services_controller.dart';
@@ -58,33 +59,46 @@ class adminaddscreen extends StatelessWidget {
                   child: Material(
                     elevation: 3,
                     borderRadius: BorderRadius.circular(12),
-                    child: TextField(
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        hintText: "Search ads...",
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+                    child: Container(
+                      height: 40.h,
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: "Search ads...",
+                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 12.sp),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 22.sp),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: EdgeInsets.symmetric(),
                         ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                       ),
                     ),
                   ),
                 ),
                 SizedBox(width: 12),
-                ElevatedButton.icon(
-                  icon: Icon(Icons.add, size: 20),
-                  label: Text("Create Ad"),
-                  onPressed: () {
+                InkWell(
+                  onTap: () {
                     showCreateAdDialog(context);
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Container(
+                    height: 40.h,
+                                          width: 80.w,
+
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add, size: 20, color: Colors.white),
+                      Text("Create Ad", style: TextStyle(color: Colors.white,fontSize: 8.sp)),
+                      ],
+                    )
                   ),
                 ),
               ],
@@ -103,102 +117,122 @@ class adminaddscreen extends StatelessWidget {
             ),
             SizedBox(height: 16),
 
-            /// Ads List
-            Expanded(
-              child: Obx(() {
-                final ads = serviceController.adsList;
+        Expanded(
+  child: Obx(() {
+    final ads = serviceController.adsList;
 
-                if (ads.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.image_not_supported, size: 60, color: Colors.grey.shade400),
-                        SizedBox(height: 12),
-                        Text(
-                          "No ads available.",
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                        ),
+    if (ads.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.image_not_supported, size: 60, color: Colors.grey.shade400),
+            SizedBox(height: 12),
+            Text(
+              "No ads available.",
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: ads.length,
+      itemBuilder: (context, index) {
+        final ad = ads[index];
+
+        return Container(
+          margin: EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade300,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                // Background image
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    ad.imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.broken_image, color: Colors.grey),
+                    ),
+                  ),
+                ),
+
+                // Gradient Overlay at bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 80,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Username text at bottom-left
+                Positioned(
+                  left: 16,
+                  bottom: 12,
+                  child: Text(
+                    ad.uploadedByUsername,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(color: Colors.black45, blurRadius: 4),
                       ],
                     ),
-                  );
-                }
+                  ),
+                ),
 
-                return ListView.builder(
-                  itemCount: ads.length,
-                  itemBuilder: (context, index) {
-                    final ad = ads[index];
-
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.shade300,
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
-                          )
-                        ],
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                ad.imageUrl,
-                                width: 70,
-                                height: 70,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 70,
-                                  height: 70,
-                                  color: Colors.grey.shade200,
-                                  child: Icon(Icons.broken_image, color: Colors.grey),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    ad.uploadedByUsername,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: primaryColor,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    ad.id,
-                                    style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
-                              onPressed: () {
-                                serviceController.deleteAd(ad.id);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }),
+                // Delete button at top-right
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                      onPressed: () {
+                        serviceController.deleteAd(ad.id);
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
+        );
+      },
+    );
+  }),
+),
+
           ],
         ),
       ),

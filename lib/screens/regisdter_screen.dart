@@ -20,7 +20,7 @@ class RegisterScreen extends StatelessWidget {
           onTap: () {
             Get.back();
           },
-          child: Icon(Icons.arrow_back, color: Colors.white),
+          child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
         ),
         backgroundColor: primaryColor,
         elevation: 0,
@@ -30,13 +30,12 @@ class RegisterScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 20.sp,
+            fontSize: 18.sp,
           ),
         ),
-        iconTheme: IconThemeData(color: Colors.white, size: 24.sp),
         actions: [
           IconButton(
-            icon: Icon(Icons.language, size: 24.sp),
+            icon: Icon(Icons.language, size: 20.sp, color: Colors.white),
             onPressed: () {
               _showLanguageDialog(context);
             },
@@ -48,43 +47,44 @@ class RegisterScreen extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset('assets/joya-register.png', fit: BoxFit.cover),
+              child: Image.asset(
+                'assets/joya-register.png',
+                fit: BoxFit.cover,
+              ),
             ),
-            Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 8.w,
-                    right: 8.w,
-                    top: 230.h,
-                    bottom: 20.h,
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "register_heading".tr,
-                        style: TextStyle(
-                          fontSize: 28.sp,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: 8.w,
+                      right: 8.w,
+                      top: 180.h,
+                      bottom: 20.h,
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          "register_heading".tr,
+                          style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        "register_subheading".tr,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.grey.shade600,
+                        SizedBox(height: 8.h),
+                        Text(
+                          "register_subheading".tr,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-
-                /// ✅ SCROLLABLE FORM
-                Expanded(
-                  child: SingleChildScrollView(
+                  SingleChildScrollView(
                     padding: EdgeInsets.symmetric(
                       horizontal: 16.w,
                       vertical: 16.h,
@@ -95,7 +95,7 @@ class RegisterScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           buildFormFields(context),
-                          SizedBox(height: 30.h),
+                          SizedBox(height: 20.h),
                           Center(
                             child: GestureDetector(
                               onTap: () {
@@ -106,7 +106,7 @@ class RegisterScreen extends StatelessWidget {
                                   text: "already_account".tr,
                                   style: TextStyle(
                                     color: Colors.grey.shade700,
-                                    fontSize: 14.sp,
+                                    fontSize: 12.sp,
                                   ),
                                   children: [
                                     TextSpan(
@@ -114,7 +114,7 @@ class RegisterScreen extends StatelessWidget {
                                       style: TextStyle(
                                         color: primaryColor,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 14.sp,
+                                        fontSize: 12.sp,
                                       ),
                                     ),
                                   ],
@@ -122,13 +122,13 @@ class RegisterScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 20.h),
+                          SizedBox(height: 40.h),
                         ],
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -140,18 +140,15 @@ class RegisterScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// Country
-        SizedBox(height: 20.h),
+        SizedBox(height: 10.h),
 
         /// First Name
         Text("first_name_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: controller.firstNameController,
-          decoration: inputDecoration(
-            primaryColor,
-            context,
-          ).copyWith(hintText: "first_name_hint".tr),
+          decoration: inputDecoration(primaryColor, context)
+              .copyWith(hintText: "first_name_hint".tr),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return "first_name_required".tr;
@@ -159,29 +156,25 @@ class RegisterScreen extends StatelessWidget {
             return null;
           },
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 12.h),
 
         /// Last Name
         Text("last_name_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: controller.lastNameController,
-          decoration: inputDecoration(
-            primaryColor,
-            context,
-          ).copyWith(hintText: "last_name_hint".tr),
+          decoration: inputDecoration(primaryColor, context)
+              .copyWith(hintText: "last_name_hint".tr),
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 12.h),
 
         /// Username
         Text("username_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: controller.userNameController,
-          decoration: inputDecoration(
-            primaryColor,
-            context,
-          ).copyWith(hintText: "username_hint".tr),
+          decoration: inputDecoration(primaryColor, context)
+              .copyWith(hintText: "username_hint".tr),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return "username_required".tr;
@@ -189,28 +182,29 @@ class RegisterScreen extends StatelessWidget {
             return null;
           },
         ),
-        SizedBox(height: 20.h),
-         Text("country_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
+        SizedBox(height: 12.h),
+
+        /// Country
+        Text("country_label".tr, style: labelStyle(primaryColor)),
+        SizedBox(height: 6.h),
         Obx(
           () => DropdownButtonFormField<String>(
-            value:
-                controller.selectedCountry.value.isEmpty
-                    ? null
-                    : controller.selectedCountry.value,
-            decoration: inputDecoration(
-              primaryColor,
-              context,
-            ).copyWith(hintText: "country_hint".tr),
-            items:
-                controller.countries
-                    .map(
-                      (c) => DropdownMenuItem(
-                        value: c,
-                        child: Text(c, style: TextStyle(fontSize: 14.sp)),
-                      ),
-                    )
-                    .toList(),
+            value: controller.selectedCountry.value.isEmpty
+                ? null
+                : controller.selectedCountry.value,
+            decoration: inputDecoration(primaryColor, context)
+                .copyWith(hintText: "country_hint".tr),
+            items: controller.countries
+                .map(
+                  (c) => DropdownMenuItem(
+                    value: c,
+                    child: Text(
+                      c,
+                      style: TextStyle(fontSize: 12.sp),
+                    ),
+                  ),
+                )
+                .toList(),
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return "country_required".tr;
@@ -222,46 +216,44 @@ class RegisterScreen extends StatelessWidget {
             },
           ),
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 12.h),
 
         /// Role
         Text("role_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
-       Obx(
-  () => DropdownButtonFormField<String>(
-    value: controller.selectedRole.value.isEmpty
-        ? null
-        : controller.selectedRole.value,
-    decoration: inputDecoration(
-      primaryColor,
-      context,
-    ).copyWith(hintText: "role_hint".tr),
-    items: controller.roles
-        .map(
-          (role) => DropdownMenuItem(
-            value: role,
-            child: Text(role, style: TextStyle(fontSize: 14.sp)),
+        SizedBox(height: 6.h),
+        Obx(
+          () => DropdownButtonFormField<String>(
+            value: controller.selectedRole.value.isEmpty
+                ? null
+                : controller.selectedRole.value,
+            decoration: inputDecoration(primaryColor, context)
+                .copyWith(hintText: "role_hint".tr),
+            items: controller.roles
+                .map(
+                  (role) => DropdownMenuItem(
+                    value: role,
+                    child: Text(
+                      role,
+                      style: TextStyle(fontSize: 12.sp),
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              controller.selectedRole.value = value ?? 'user';
+            },
           ),
-        )
-        .toList(),
-    onChanged: (value) {
-      controller.selectedRole.value = value ?? 'user';
-    },
-  ),
-),
-
-SizedBox(height: 20.h),
+        ),
+        SizedBox(height: 12.h),
 
         /// Email
         Text("email_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: controller.emailController,
           keyboardType: TextInputType.emailAddress,
-          decoration: inputDecoration(
-            primaryColor,
-            context,
-          ).copyWith(hintText: "email_hint".tr),
+          decoration: inputDecoration(primaryColor, context)
+              .copyWith(hintText: "email_hint".tr),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return "email_required".tr;
@@ -269,18 +261,16 @@ SizedBox(height: 20.h),
             return null;
           },
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 12.h),
 
         /// Phone
         Text("phone_label".tr, style: labelStyle(primaryColor)),
-        SizedBox(height: 8.h),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: controller.phoneController,
           keyboardType: TextInputType.phone,
-          decoration: inputDecoration(
-            primaryColor,
-            context,
-          ).copyWith(hintText: "phone_hint".tr),
+          decoration: inputDecoration(primaryColor, context)
+              .copyWith(hintText: "phone_hint".tr),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return "phone_required".tr;
@@ -288,39 +278,38 @@ SizedBox(height: 20.h),
             return null;
           },
         ),
-       
-        SizedBox(height: 10),
- Text('login_password_label'.tr, style: labelStyle(primaryColor)),
-                    SizedBox(height: 8.h),
-                    Obx(
-                      () => TextFormField(
-                        controller: controller.passwordController,
-                        obscureText: !controller.isPasswordVisible.value,
-                        decoration: inputDecoration(primaryColor, context).copyWith(
-                          hintText: 'login_password_hint'.tr,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              controller.isPasswordVisible.value
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              size: 22.sp,
-                            ),
-                            onPressed: () {
-                              controller.isPasswordVisible.value =
-                                  !controller.isPasswordVisible.value;
-                            },
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'login_required_password'.tr;
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
+        SizedBox(height: 12.h),
 
-
+        /// Password
+        Text("login_password_label".tr, style: labelStyle(primaryColor)),
+        SizedBox(height: 6.h),
+        Obx(
+          () => TextFormField(
+            controller: controller.passwordController,
+            obscureText: !controller.isPasswordVisible.value,
+            decoration: inputDecoration(primaryColor, context).copyWith(
+              hintText: 'login_password_hint'.tr,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.isPasswordVisible.value
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  size: 18.sp,
+                ),
+                onPressed: () {
+                  controller.isPasswordVisible.value =
+                      !controller.isPasswordVisible.value;
+                },
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'login_required_password'.tr;
+              }
+              return null;
+            },
+          ),
+        ),
       ],
     );
   }
@@ -331,40 +320,43 @@ SizedBox(height: 20.h),
         width: double.infinity,
         color: Colors.white,
         padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 24.h),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
+        child: SizedBox(
+          width: 220.w,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
             ),
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-          ),
-          onPressed:
-              controller.isLoading.value
-                  ? null
-                  : () {
+            onPressed: controller.isLoading.value
+                ? null
+                : () {
                     if (_formKey.currentState!.validate()) {
                       controller.registerUser();
                     }
                   },
-          child:
-              controller.isLoading.value
-                  ? SizedBox(
-                    height: 24.h,
-                    width: 24.h,
+            icon: Icon(Icons.app_registration,
+                color: Colors.white, size: 18.sp),
+            label: controller.isLoading.value
+                ? SizedBox(
+                    height: 18.h,
+                    width: 18.h,
                     child: CircularProgressIndicator(
                       color: Colors.white,
                       strokeWidth: 2,
                     ),
                   )
-                  : Text(
+                : Text(
                     "sign_up".tr,
                     style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
+          ),
         ),
       ),
     );
@@ -378,10 +370,11 @@ SizedBox(height: 20.h),
       titleStyle: TextStyle(
         color: primaryColor,
         fontWeight: FontWeight.bold,
-        fontSize: 18.sp,
+        fontSize: 16.sp,
       ),
       content: Obx(() {
-        final currentLang = languageController.currentLocale.value.languageCode;
+        final currentLang =
+            languageController.currentLocale.value.languageCode;
 
         return Column(
           children: [
@@ -393,7 +386,7 @@ SizedBox(height: 20.h),
                 Get.back();
               },
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             _buildLangButton(
               label: "عربي",
               isSelected: currentLang == 'ar',
@@ -416,20 +409,23 @@ SizedBox(height: 20.h),
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 14.h),
+        width: 140.w,
+        padding: EdgeInsets.symmetric(vertical: 10.h),
         decoration: BoxDecoration(
           color: isSelected ? primaryColor : Colors.white,
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: primaryColor, width: 2.w),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: primaryColor,
+            width: 1.5.w,
+          ),
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : primaryColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontSize: 13.sp,
             ),
           ),
         ),
@@ -438,23 +434,27 @@ SizedBox(height: 20.h),
   }
 
   TextStyle labelStyle(Color primaryColor) => TextStyle(
-    fontWeight: FontWeight.bold,
-    fontSize: 14.sp,
-    color: primaryColor,
-  );
+        fontWeight: FontWeight.bold,
+        fontSize: 12.sp,
+        color: primaryColor,
+      );
 
-  InputDecoration inputDecoration(Color primaryColor, BuildContext context) =>
+  InputDecoration inputDecoration(
+          Color primaryColor, BuildContext context) =>
       InputDecoration(
         filled: true,
         fillColor: Colors.grey.shade100,
-        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        hintStyle:
+            TextStyle(color: Colors.grey.shade500, fontSize: 12.sp),
+        contentPadding:
+            EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: Colors.grey.shade300, width: 1.w),
+          borderRadius: BorderRadius.circular(10.r),
+          borderSide:
+              BorderSide(color: Colors.grey.shade300, width: 1.w),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(10.r),
           borderSide: BorderSide(color: primaryColor, width: 1.5.w),
         ),
       );

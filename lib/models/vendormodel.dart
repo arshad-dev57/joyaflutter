@@ -10,15 +10,17 @@ class VendorModel {
   final String code;
   final String country;
   final String? description;
+  final String? paymentlink;
   final String? image;
   final List<String> services;
   final List<SocialLink> urls;
   final String createdBy;
-  final List<String> portfolios; // only IDs (optional)
-  final List<PortfolioModel> linkedPortfolios; // embedded portfolios
+  final List<String> portfolios;
+  final List<PortfolioModel> linkedPortfolios; 
 
   VendorModel({
     required this.id,
+    required this.paymentlink,
     required this.firstname,
     required this.lastname,
     required this.username,
@@ -38,6 +40,7 @@ class VendorModel {
   factory VendorModel.fromJson(Map<String, dynamic> json) {
     return VendorModel(
       id: json["_id"] ?? "",
+      paymentlink: json["paymentlink"] ?? "",
       firstname: json["firstname"] ?? "",
       lastname: json["lastname"] ?? "",
       username: json["username"] ?? "",
@@ -61,7 +64,6 @@ class VendorModel {
     );
   }
 
-  // ✅ NEW: copyWith for updating specific fields
   VendorModel copyWith({
     String? id,
     String? firstname,
@@ -78,6 +80,7 @@ class VendorModel {
     String? createdBy,
     List<String>? portfolios,
     List<PortfolioModel>? linkedPortfolios,
+    String? paymentlink,
   }) {
     return VendorModel(
       id: id ?? this.id,
@@ -95,6 +98,7 @@ class VendorModel {
       createdBy: createdBy ?? this.createdBy,
       portfolios: portfolios ?? this.portfolios,
       linkedPortfolios: linkedPortfolios ?? this.linkedPortfolios,
+      paymentlink: paymentlink ?? this.paymentlink,
     );
   }
 }

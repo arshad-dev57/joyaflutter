@@ -34,6 +34,7 @@ class LoginController extends GetxController {
       var token = data['token'];
       var userId = data['data']['id'];
       var role = data['data']['role'];
+      var firstname = data['data']['firstname'];
       var countryList = data['data']['country'];
       var countryString = "";
       if (countryList != null && countryList is List) {
@@ -45,6 +46,9 @@ class LoginController extends GetxController {
       await prefs.setString('role', role);
       await prefs.setString('country', countryString);
      await prefs.setString('userId', userId);
+
+      await prefs.setString('username', firstname);
+      print("firstname: $firstname");
       print("Token Saved: $token");
       print("User Role: $role");
       print("Country Saved: $countryString");

@@ -68,10 +68,13 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    decoration: inputDecoration(primaryColor, context).copyWith(
-                      hintText: 'Search Portfolios',
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
+                  child: Container(
+                    height: 40.h,
+                    child: TextFormField(
+                      decoration: inputDecoration(primaryColor, context).copyWith(
+                        hintText: 'Search Portfolios',
+                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
+                      ),
                     ),
                   ),
                 ),
@@ -112,36 +115,40 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
 
           /// Dropdown
           Obx(() {
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: DropdownButtonFormField<String>(
-                decoration: inputDecoration(primaryColor, context).copyWith(
-                  hintText: "Select Service",
-                  filled: true,
-                  fillColor: Colors.white,
+            return Container(
+              height: 40.h,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: DropdownButtonFormField<String>(
+                  decoration: inputDecoration(primaryColor, context).copyWith(
+                    hintText: "Select Service",
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  value: servicesController.selectedServiceName.value.isEmpty
+                      ? null
+                      : servicesController.selectedServiceName.value,
+                  items: servicesController.serviceNames
+                      .map(
+                        (s) => DropdownMenuItem<String>(
+                          value: s,
+                          child: Text(s, style: TextStyle(fontSize: 12.sp)
+                          ),
+                        ),
+                      )
+                      .toList(),
+                onChanged: (val) {
+                servicesController.selectedServiceName.value = val ?? '';
+              
+                if (val != null && val.isNotEmpty) {
+                  portfolioController.getPortfolios(val);
+                } else {
+                  // Clear the list when empty selected
+                  portfolioController.portfolioList.clear();
+                }
+              }
+              
                 ),
-                value: servicesController.selectedServiceName.value.isEmpty
-                    ? null
-                    : servicesController.selectedServiceName.value,
-                items: servicesController.serviceNames
-                    .map(
-                      (s) => DropdownMenuItem<String>(
-                        value: s,
-                        child: Text(s),
-                      ),
-                    )
-                    .toList(),
-              onChanged: (val) {
-  servicesController.selectedServiceName.value = val ?? '';
-
-  if (val != null && val.isNotEmpty) {
-    portfolioController.getPortfolios(val);
-  } else {
-    // Clear the list when empty selected
-    portfolioController.portfolioList.clear();
-  }
-}
-
               ),
             );
           }),
@@ -300,58 +307,58 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
 
                 SizedBox(height: 12.h),
 
-                Divider(),
+                // Divider(),
 
-                /// Details
-                _infoRow(Icons.location_on, "Location", item.location),
-                _infoRow(Icons.timer, "Duration", item.duration),
-                _infoRow(Icons.group, "Client Type", item.clientType),
+                // /// Details
+                // _infoRow(Icons.location_on, "Location", item.location),
+                // _infoRow(Icons.timer, "Duration", item.duration),
+                // _infoRow(Icons.group, "Client Type", item.clientType),
 
-                if (item.tags != null && item.tags!.isNotEmpty)
-                  _infoRow(Icons.label, "Tags", item.tags!.join(', ')),
+                // if (item.tags != null && item.tags!.isNotEmpty)
+                //   _infoRow(Icons.label, "Tags", item.tags!.join(', ')),
 
                 SizedBox(height: 12.h),
 
                 /// Testimonials
-                if (item.testimonials != null &&
-                    item.testimonials!.isNotEmpty)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Testimonials:",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                          fontSize: 14.sp,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      ...item.testimonials!.map(
-                        (t) => Padding(
-                          padding: EdgeInsets.symmetric(vertical: 2.h),
-                          child: Text(
-                            "• $t",
-                            style: TextStyle(
-                              color: Colors.grey.shade800,
-                              fontSize: 12.sp,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                // if (item.testimonials != null &&
+                //     item.testimonials!.isNotEmpty)
+                //   Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Text(
+                //         "Testimonials:",
+                //         style: TextStyle(
+                //           fontWeight: FontWeight.bold,
+                //           color: primaryColor,
+                //           fontSize: 14.sp,
+                //         ),
+                //       ),
+                //       SizedBox(height: 8.h),
+                //       ...item.testimonials!.map(
+                //         (t) => Padding(
+                //           padding: EdgeInsets.symmetric(vertical: 2.h),
+                //           child: Text(
+                //             "• $t",
+                //             style: TextStyle(
+                //               color: Colors.grey.shade800,
+                //               fontSize: 12.sp,
+                //               fontStyle: FontStyle.italic,
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
 
-                SizedBox(height: 12.h),
+                // SizedBox(height: 12.h),
 
-                Text(
-                  "Created on: ${item.createdAt.toLocal().toString().split(' ')[0]}",
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 12.sp,
-                  ),
-                )
+                // Text(
+                //   "Created on: ${item.createdAt.toLocal().toString().split(' ')[0]}",
+                //   style: TextStyle(
+                //     color: Colors.grey.shade500,
+                //     fontSize: 12.sp,
+                //   ),
+                // )
               ],
             ),
           )

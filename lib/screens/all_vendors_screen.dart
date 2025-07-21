@@ -8,6 +8,7 @@ import 'package:joya_app/screens/all_vendor_detail_screen.dart';
 import 'package:joya_app/utils/colors.dart';
 import 'package:joya_app/widgets/add_vendor_dialogue.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AllVendorsScreen extends StatefulWidget {
   final String country;
@@ -81,17 +82,18 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    decoration: inputDecoration(primaryColor, context).copyWith(
-                      hintText: "Search vendors...",
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
+                  child: Container(
+                    height: 40.h,
+                    child: TextFormField(
+                      controller: controller.searchController,
+                      decoration: inputDecoration(primaryColor, context).copyWith(
+                        hintText: "Search vendors...",
+                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
+                      ),
+                                     onChanged: (value) {
+                     controller.filterVendors(value);
+                                     },
                     ),
-                    onFieldSubmitted: (value) {
-                      controller.fetchVendors(
-                        country: widget.country,
-                        service: value,
-                      );
-                    },
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -101,6 +103,7 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
                       Get.dialog(AddVendorDialog());
                     },
                     child: Container(
+                      height: 40.h,
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -170,7 +173,6 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
       ),
     );
   }
-
 Widget _buildVendorCard(VendorModel vendor) {
   return Stack(
     children: [
@@ -189,7 +191,6 @@ Widget _buildVendorCard(VendorModel vendor) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Section with Overlay and Name
             if (vendor.image != null && vendor.image!.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -230,107 +231,127 @@ Widget _buildVendorCard(VendorModel vendor) {
                   ],
                 ),
               ),
-
-            // Info Section
             Padding(
               padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _infoRow(Icons.phone, vendor.phoneNumber),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _infoRow(Icons.phone, vendor.phoneNumber),
+                      _infoRow(Icons.location_on, vendor.country),
+                    ],
+                  ),
                   SizedBox(height: 8.h),
                   _infoRow(Icons.email, vendor.email),
                   SizedBox(height: 8.h),
-                  _infoRow(Icons.location_on, vendor.country),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
+                    children: List.generate(vendor.services.length, (index) {
+                      final service = vendor.services[index];
+                      final List<Color> chipColors = [
+                        Colors.blueAccent.withOpacity(0.15),
+                        Colors.redAccent.withOpacity(0.15),
+                        Colors.greenAccent.withOpacity(0.2),
+                      ];
+                      final backgroundColor = chipColors[index % chipColors.length];
+                      return Chip(
+                        label: Text(
+                          service,
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        backgroundColor: backgroundColor,
+                        shape: StadiumBorder(),
+                      );
+                    }),
+                  ),
+                  SizedBox(height: 8.h),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: vendor.urls.map((urlModel) {
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 6.h),
+                        child: _infoRow(
+                          Icons.link,
+                          urlModel.url,
+                          onTap: () => launchUrl(Uri.parse(urlModel.url)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
                   SizedBox(height: 14.h),
-                Wrap(
-  spacing: 8.w,
-  runSpacing: 6.h,
-  children: List.generate(vendor.services.length, (index) {
-    final service = vendor.services[index];
-    final List<Color> chipColors = [
-      Colors.blueAccent.withValues(alpha: 0.15),
-      Colors.redAccent.withValues(alpha: 0.15),
-      Colors.greenAccent.withValues(alpha: 0.2),
-    ];
-    final backgroundColor = chipColors[index % chipColors.length];
-
-    return Chip(
-      label: Text(
-        service,
-        style: TextStyle(
-          color: Colors.black87,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      backgroundColor: backgroundColor,
-      shape: StadiumBorder(),
-    );
-  }),
-),
-
                 ],
               ),
             ),
           ],
         ),
       ),
-
-  if (vendor.createdBy == currentUserId && currentUserRole != "user")
-  Positioned(
-    top: 10.r,
-    right: 10.r,
-    child: InkWell(
-      onTap: () {
-        Get.dialog(
-          AddVendorDialog(
-            vendor: vendor,
-            isEdit: true,
+      if (vendor.createdBy == currentUserId && currentUserRole != "user")
+        Positioned(
+          top: 10.r,
+          right: 10.r,
+          child: InkWell(
+            onTap: () {
+              Get.dialog(
+                AddVendorDialog(
+                  vendor: vendor,
+                  isEdit: true,
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(20.r),
+            child: Container(
+              height: 36.r,
+              width: 36.r,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  )
+                ],
+              ),
+              child: Icon(Icons.edit, color: primaryColor, size: 18.sp),
+            ),
           ),
-        );
-      },
-      borderRadius: BorderRadius.circular(20.r),
-      child: Container(
-        height: 36.r,
-        width: 36.r,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6,
-              offset: Offset(0, 3),
-            )
-          ],
         ),
-        child: Icon(Icons.edit, color: primaryColor, size: 18.sp),
-      ),
-    ),
-  ),
-
     ],
   );
 }
 
 
- Widget _infoRow(IconData icon, String value) {
+
+ Widget _infoRow(IconData icon, String value, {Function()? onTap}) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Icon(icon, size: 18.sp, color: Colors.grey.shade600),
       SizedBox(width: 8.w),
-      Expanded(
+      InkWell(
+        onTap: () {
+          if (onTap != null) {
+            onTap();
+          }
+        },
         child: Text(
-          value,
-          style: TextStyle(
-            fontSize: 13.5.sp,
-            color: Colors.grey.shade800,
-            fontWeight: FontWeight.w500,
-          ),
+        value,
+        style: TextStyle(
+          fontSize: 13.5.sp,
+          color: Colors.grey.shade800,
+          fontWeight: FontWeight.w500,
         ),
       ),
+            )
     ],
   );
 }

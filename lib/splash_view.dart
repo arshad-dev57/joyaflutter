@@ -4,7 +4,6 @@ import 'package:joya_app/controllers/splash_controller.dart';
 
 class SplashView extends StatelessWidget {
    SplashView({super.key});
-
   final SplashController controller = Get.put(SplashController());
 
   @override
@@ -12,8 +11,10 @@ class SplashView extends StatelessWidget {
     return  Scaffold(
       backgroundColor: Colors.white,
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(child: Image(image: AssetImage('assets/splash-screen.png',),fit: BoxFit.cover,)),
+          Image(image: AssetImage('assets/joya.png',),fit: BoxFit.cover,),
         ],
       ),
     );

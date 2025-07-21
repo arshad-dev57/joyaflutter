@@ -9,10 +9,12 @@ class UserModel {
   final String lastname;
   final String phone;
   final String createdAt;
+  final String paymentStatus;
 
   UserModel({
     required this.id,
     required this.username,
+    required this.paymentStatus,
     required this.email,
     required this.country,
     required this.language,
@@ -26,6 +28,7 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
   return UserModel(
     id: json['_id'] ?? '',
+    paymentStatus: json['paymentStatus'] ?? '',
     username: json['username'] ?? '',
     email: json['email'] ?? '',
     country: List<String>.from(json['country'] ?? []),

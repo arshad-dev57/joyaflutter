@@ -27,7 +27,9 @@ class AllVendorsController extends GetxController {
   final countryCtrl = TextEditingController();
   final descriptionCtrl = TextEditingController();
   final firstNameCtrl = TextEditingController();
+  final paymentlinkCtrl = TextEditingController();
   final lastNameCtrl = TextEditingController();
+  final searchController = TextEditingController();
   final passwordCtrl = TextEditingController();
   var reviewloading = false.obs;
   var isSubmitting = false.obs;
@@ -46,7 +48,30 @@ class AllVendorsController extends GetxController {
 
   var urlLinks = <Map<String, dynamic>>[].obs;
   final socialNameCtrl = TextEditingController();
+  var allVendors = <VendorModel>[];      // ✅ ADD THIS LINE
+
   final socialUrlCtrl = TextEditingController();
+
+void filterVendors(String query) {
+  if (query.isEmpty) {
+    vendors.assignAll(allVendors);
+  } else {
+    vendors.assignAll(
+      allVendors.where((v) {
+        final name = "${v.firstname} ${v.lastname}".toLowerCase();
+        final email = v.email.toLowerCase();
+        final phone = v.phoneNumber.toLowerCase();
+        final services = v.services.join(" ").toLowerCase();
+
+        return name.contains(query.toLowerCase()) ||
+            email.contains(query.toLowerCase()) ||
+            phone.contains(query.toLowerCase()) ||
+            services.contains(query.toLowerCase());
+      }),
+    );
+  }
+}
+
 
   Future<void> pickImage() async {
     final picker = ImagePicker();
@@ -113,7 +138,6 @@ class AllVendorsController extends GetxController {
 
   Future<void> submit() async {
     if (!formKey.currentState!.validate()) {
-      print("[Form Error] Form is invalid.");
       return;
     }
 
@@ -137,13 +161,12 @@ class AllVendorsController extends GetxController {
       final uri = Uri.parse('$baseUrl/vendors/create');
       final request = http.MultipartRequest('POST', uri);
       request.headers['Authorization'] = 'Bearer $token';
-
-      // Add fields
       final fields = {
         "firstname": firstNameCtrl.text.trim(),
         "lastname": lastNameCtrl.text.trim(),
         "username": usernameCtrl.text.trim(),
         "email": emailCtrl.text.trim(),
+        "paymentlink": paymentlinkCtrl.text.trim(),
         "phone_number": phoneCtrl.text.trim(),
         "code": codeCtrl.text.trim(),
         "country": countryCtrl.text.trim(),
@@ -155,8 +178,6 @@ class AllVendorsController extends GetxController {
       print("[DEBUG] Fields to be sent:");
       fields.forEach((k, v) => print("  $k: $v"));
       request.fields.addAll(fields);
-
-      // Prepare social links array
       List<Map<String, dynamic>> socialLinks =
           urlLinks.map((item) {
             return {"name": item["name"], "url": item["url"]};
@@ -164,8 +185,6 @@ class AllVendorsController extends GetxController {
 
       request.fields["url"] = jsonEncode(socialLinks);
       print("[DEBUG] URL field: ${request.fields["url"]}");
-
-      // Add main image
       if (kIsWeb && imageBytes.value != null) {
         print("[DEBUG] Attaching main image from bytes (web)...");
         final multipartFile = http.MultipartFile.fromBytes(
@@ -281,64 +300,69 @@ prefs.setString('vendorId', newVendorId);
     socialImageFile.value = null;
     socialImageBytes.value = null;
   }
+Future<void> fetchVendors({
+  required String country,
+  required String service,
+}) async {
+  try {
+    isLoadingVendors.value = true;
 
-  Future<void> fetchVendors({
-    required String country,
-    required String service,
-  }) async {
-    try {
-      isLoadingVendors.value = true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('token');
+    final url = Uri.parse(
+      '$baseUrl/vendors/getmyvendors?service=$service&country=$country',
+    );
+    print("url: $url");
 
-      final url = Uri.parse(
-        '$baseUrl/vendors/getmyvendors?service=$service&country=$country',
-      );
-      print("url: $url");
-      final response = await http.get(
-        url,
-        headers: {'Authorization': 'Bearer $token'},
-      );
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        if (jsonData["success"] == true) {
-          final List data = jsonData["data"];
-          vendors.value =
-              data.map((item) => VendorModel.fromJson(item)).toList();
-          print("vendors: $vendors");
-          print("Fetched ${vendors.length} vendors from server.");
-        } else {
-          print("Failed to fetch vendors. Status: ${response.statusCode}");
-          Get.snackbar(
-            "Error",
-            jsonData["message"] ?? "Something went wrong",
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        }
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      if (jsonData["success"] == true) {
+        final List data = jsonData["data"];
+        vendors.value =
+            data.map((item) => VendorModel.fromJson(item)).toList();
+
+        // ✅ STEP 2 - add this:
+        allVendors = vendors.toList();
+
+        print("vendors: $vendors");
+        print("Fetched ${vendors.length} vendors from server.");
       } else {
         print("Failed to fetch vendors. Status: ${response.statusCode}");
         Get.snackbar(
           "Error",
-          "Failed to fetch vendors. Status: ${response.statusCode}",
+          jsonData["message"] ?? "Something went wrong",
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
       }
-    } catch (e) {
-      print("Fetch Vendors Exception: $e");
+    } else {
+      print("Failed to fetch vendors. Status: ${response.statusCode}");
       Get.snackbar(
         "Error",
-        e.toString(),
+        "Failed to fetch vendors. Status: ${response.statusCode}",
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoadingVendors.value = false;
     }
+  } catch (e) {
+    print("Fetch Vendors Exception: $e");
+    Get.snackbar(
+      "Error",
+      e.toString(),
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoadingVendors.value = false;
   }
+}
+
 
   Future<void> addReview({
     required String vendorId,
@@ -495,13 +519,7 @@ prefs.setString('vendorId', newVendorId);
   }
 
   Future<void> updateVendor(String vendorId) async {
-    if (!formKey.currentState!.validate()) {
-      print("[Form Error] Form is invalid.");
-      return;
-    }
-
     isSubmitting.value = true;
-
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');

@@ -28,15 +28,12 @@ class PortfolioController extends GetxController {
   final selfNoteCtrl = TextEditingController();
   final videoLinkCtrl = TextEditingController();
   final clientTypeCtrl = TextEditingController();
-
   Rx<DateTime?> selectedDate = Rx<DateTime?>(null);
   RxBool isPracticeProject = false.obs;
   RxBool contactEnabled = true.obs;
 
   var skillsUsed = <String>[].obs;
   var equipmentUsed = <String>[].obs;
-
-  // NEW FIELDS
   final numberOfProjectsCtrl = TextEditingController();
 
   // timeEstimates
@@ -56,6 +53,29 @@ class PortfolioController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    titleCtrl.dispose();
+    descCtrl.dispose();
+    highlightsCtrl.dispose();
+    challengesCtrl.dispose();
+    locationCtrl.dispose();
+    durationCtrl.dispose();
+    selfNoteCtrl.dispose();
+    videoLinkCtrl.dispose();
+    clientTypeCtrl.dispose();
+    numberOfProjectsCtrl.dispose();
+    minHoursCtrl.dispose();
+    maxHoursCtrl.dispose();
+    costMinCtrl.dispose();
+    costMaxCtrl.dispose();
+    currencyCtrl.dispose();
+    imageFiles.clear();
+    imageBytesList.clear();
+    imageNames.clear();
   }
 
   Future<void> pickImage() async {
@@ -86,9 +106,7 @@ class PortfolioController extends GetxController {
 
   Future<void> addPortfolio() async {
     if (!formKey.currentState!.validate()) return;
-
     addPortfolioLoading.value = true;
-
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
@@ -100,42 +118,7 @@ class PortfolioController extends GetxController {
       request.fields['title'] = titleCtrl.text;
       request.fields['description'] = descCtrl.text;
 
-      /// ✅ Serialize serviceType list
       request.fields['serviceType'] = jsonEncode(serviceTypeList);
-
-      request.fields['skillsUsed'] = jsonEncode(skillsUsed);
-      request.fields['highlights'] = highlightsCtrl.text;
-      request.fields['challengesFaced'] = challengesCtrl.text;
-      request.fields['location'] = locationCtrl.text;
-      request.fields['duration'] = durationCtrl.text;
-      request.fields['selfNote'] = selfNoteCtrl.text;
-      request.fields['clientType'] = clientTypeCtrl.text;
-      request.fields['equipmentUsed'] = jsonEncode(equipmentUsed);
-      request.fields['videoLinks'] = jsonEncode([videoLinkCtrl.text]);
-      request.fields['contactEnabled'] = contactEnabled.value.toString();
-      request.fields['isPracticeProject'] = isPracticeProject.value.toString();
-
-      if (selectedDate.value != null) {
-        request.fields['date'] = selectedDate.value!.toIso8601String();
-      }
-
-      // NEW FIELDS:
-      if (numberOfProjectsCtrl.text.isNotEmpty) {
-        request.fields['numberOfProjects'] = numberOfProjectsCtrl.text;
-      }
-
-      request.fields['timeEstimates'] = jsonEncode({
-        "minHours": int.tryParse(minHoursCtrl.text) ?? 1,
-        "maxHours": int.tryParse(maxHoursCtrl.text) ?? 10,
-      });
-
-      request.fields['estimatedCostRange'] = jsonEncode({
-        "min": double.tryParse(costMinCtrl.text) ?? 0.0,
-        "max": double.tryParse(costMaxCtrl.text) ?? 0.0,
-        "currency": currencyCtrl.text,
-      });
-
-      // Attach images
       if (kIsWeb) {
         for (int i = 0; i < imageBytesList.length; i++) {
           request.files.add(http.MultipartFile.fromBytes(
@@ -149,7 +132,6 @@ class PortfolioController extends GetxController {
           request.files.add(await http.MultipartFile.fromPath('images', file.path));
         }
       }
-
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
@@ -167,9 +149,7 @@ class PortfolioController extends GetxController {
       addPortfolioLoading.value = false;
     }
   }
-
  Future<void> getPortfolios(String serviceType) async {
-  // 👉 First handle empty service case
   if (serviceType.isEmpty) {
     portfolioList.clear();
     return;
@@ -195,12 +175,10 @@ class PortfolioController extends GetxController {
           .map((e) => PortfolioModel.fromJson(e))
           .toList();
     } else {
-      print(response.body);
       Get.snackbar("Error", "Failed to fetch portfolios");
       portfolioList.clear(); 
     }
   } catch (e) {
-    print(e);
     Get.snackbar("Error", e.toString());
     portfolioList.clear(); 
   } finally {

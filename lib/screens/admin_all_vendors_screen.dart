@@ -77,7 +77,9 @@ class _adminallvendorsscreenState extends State<adminallvendorsscreen> {
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
+                  child: Container(
+                    height: 40.h,
+                    child: TextFormField(
                     decoration: inputDecoration(
                       primaryColor,
                       context,
@@ -92,6 +94,7 @@ class _adminallvendorsscreenState extends State<adminallvendorsscreen> {
                       );
                     },
                   ),
+                ),
                 ),
                 SizedBox(width: 10.w),
                 ElevatedButton.icon(

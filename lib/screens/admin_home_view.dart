@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/po4rtfolio_controller.dart';
+import 'package:joya_app/controllers/user_controller.dart';
 import 'package:joya_app/screens/admin_ad_screen.dart';
 import 'package:joya_app/screens/admin_all_vendors_screen.dart';
 import 'package:joya_app/screens/admin_service_screen.dart';
+import 'package:joya_app/screens/adminsociallink.dart';
 import 'package:joya_app/screens/all_users_screen.dart';
 import 'package:joya_app/screens/usser_profile_screen.dart';
 import 'package:joya_app/utils/colors.dart';
+import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -20,29 +23,7 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int selectedIndex = 0;
   final PortfolioController controller = Get.put(PortfolioController());
-
-  final metrics = [
-    {
-      'title': 'Users',
-      'icon': Icons.person_outline,
-      'count': 120,
-    },
-    {
-      'title': 'Vendors',
-      'icon': Icons.storefront_outlined,
-      'count': 45,
-    },
-    {
-      'title': 'Ads',
-      'icon': Icons.campaign_outlined,
-      'count': 30,
-    },
-    {
-      'title': 'Services',
-      'icon': Icons.design_services_outlined,
-      'count': 75,
-    },
-  ];
+  final UsersController usercontroller = Get.put(UsersController());
 
   void _onItemTapped(int index) {
     setState(() {
@@ -52,41 +33,43 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = [
-      buildDashboard(),
-      UserProfileScreen(),
-    ];
+    final pages = [buildDashboard(), UserProfileScreen()];
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: SafeArea(child: pages[selectedIndex]),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade300, width: 0.8),
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
-          child: BottomNavigationBar(
-            currentIndex: selectedIndex,
-            onTap: _onItemTapped,
-            selectedItemColor: primaryColor,
-            unselectedItemColor: Colors.grey,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_outlined, size: 24.sp),
-                label: "home".tr,
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 10.h),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30.r),
+          child: Container(
+            color: Colors.grey.shade100,
+            child: SizedBox(
+              height: 54.h,
+              child: SalomonBottomBar(
+                currentIndex: selectedIndex,
+                onTap: _onItemTapped,
+                backgroundColor: primaryColor,
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.grey.shade200,
+                itemPadding: EdgeInsets.symmetric(
+                  horizontal: 10.w,
+                  vertical: 8.h,
+                ),
+                items: [
+                  SalomonBottomBarItem(
+                    icon: Icon(Icons.home),
+                    title: Text("Home", style: TextStyle(fontSize: 12.sp)),
+                    selectedColor: Colors.white,
+                  ),
+                  SalomonBottomBarItem(
+                    icon: Icon(Icons.person),
+                    title: Text("Profile", style: TextStyle(fontSize: 12.sp)),
+                    selectedColor: Colors.white,
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline, size: 24.sp),
-                label: "profile".tr,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -94,70 +77,91 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget buildDashboard() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.all(16.r),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// Top Bar
-            Row(
-              children: [
-                InkWell(
-                  onTap: () {},
-                  child: Image.asset(
-                    'assets/joya.png',
-                    height: 40.h,
-                  ),
+    return Padding(
+      padding: EdgeInsets.all(16.r),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// Top Bar
+          Row(
+            children: [
+              Image.asset('assets/joya.png', height: 40.h),
+              Spacer(),
+              Text(
+                'Admin',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
                 ),
-                Spacer(),
-                Text(
-                  'Admin',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
-                ),
-                Spacer(),
-                CircleAvatar(
-                  radius: 20.r,
-                  backgroundImage: AssetImage('assets/user.jpg'),
-                ),
-              ],
-            ),
-            SizedBox(height: 24.h),
+              ),
+              Spacer(),
+              CircleAvatar(
+                radius: 20.r,
+                backgroundImage: AssetImage('assets/user.jpg'),
+              ),
+            ],
+          ),
+          SizedBox(height: 24.h),
+          Expanded(
+            child: Obx(() {
+              final metrics = [
+                {
+                  'title': 'Users',
+                  'icon': Icons.person_outline,
+                  'count': usercontroller.totalUsers.value,
+                  'route': AllUsersScreen(),
+                },
+                {
+                  'title': 'Vendors',
+                  'icon': Icons.storefront_outlined,
+                  'count': usercontroller.totalVendors.value,
+                  'route': adminallvendorsscreen(),
+                },
+                {
+                  'title': 'Ads',
+                  'icon': Icons.campaign_outlined,
+                  'count': usercontroller.totalAds.value,
+                  'route': adminaddscreen(),
+                },
+                {
+                  'title': 'Services',
+                  'icon': Icons.design_services_outlined,
+                  'count': usercontroller.totalServices.value,
+                  'route': AdminServiceScreen(),
+                },
+                {
+                  'title': 'Payment Links',
+                  'icon': Icons.payment,
+                "count" : usercontroller.totalPaymentLinks.value,
+                  // 'count': usercontroller.totalPaymentLinks.value,
+                  'route': AdminPaymentLinksScreen(),
+                },
+              ];
 
-            /// Dashboard Grid
-            Wrap(
-              spacing: 16.w,
-              runSpacing: 16.h,
-              children: metrics
-                  .map(
-                    (item) => SizedBox(
-                      width: (MediaQuery.of(context).size.width / 2) - 24,
-                      child: DashboardCard(
-                        title: item['title'] as String,
-                        icon: item['icon'] as IconData,
-                        count: item['count'] as int,
-                        onTap: () {
-                          if (item['title'] == 'Users') {
-                            Get.to(AllUsersScreen());
-                          } else if (item['title'] == 'Vendors') {
-                            Get.to(adminallvendorsscreen());
-                          } else if (item['title'] == 'Ads') {
-                            Get.to(adminaddscreen());
-                          } else if (item['title'] == 'Services') {
-                            Get.to(AdminServiceScreen());
-                          }
-                        },
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
+              return GridView.builder(
+                padding: EdgeInsets.only(bottom: 80.h),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16.w,
+                  mainAxisSpacing: 16.h,
+                ),
+                itemCount: metrics.length,
+                itemBuilder: (context, index) {
+                  final item = metrics[index];
+                  return DashboardCard(
+                    title: item['title'] as String,
+                    icon: item['icon'] as IconData,
+                    count: item['count'] as int,
+                    onTap: () {
+                      Get.to(item['route'] as Widget);
+                    },
+                  );
+                },
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -196,6 +200,7 @@ class DashboardCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               height: 50.r,
@@ -204,11 +209,7 @@ class DashboardCard extends StatelessWidget {
                 color: primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: primaryColor,
-                size: 26.sp,
-              ),
+              child: Icon(icon, color: primaryColor, size: 26.sp),
             ),
             SizedBox(height: 12.h),
             Text(
