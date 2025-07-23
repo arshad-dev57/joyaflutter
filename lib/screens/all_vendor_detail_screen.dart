@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/all_vendors_controllers.dart';
 import 'package:joya_app/models/vendormodel.dart';
@@ -46,455 +47,461 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Stack(
-        children: [
-          vendor.image != null && vendor.image!.isNotEmpty
-              ? SizedBox(
-                  height: 320.h,
-                  width: double.infinity,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        vendor.image!,
-                        fit: BoxFit.cover,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black.withOpacity(0.4),
-                              Colors.transparent,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 18.h),
+              InkWell(onTap: () => Get.back(), child: SvgPicture.asset("assets/Arrow.svg", height: 32.h)),
+              SizedBox(height: 12.h),
+              vendor.image != null && vendor.image!.isNotEmpty
+              ? ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: SizedBox(
+                    height: 230.h,
+                    width: double.infinity,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.network(
+                          vendor.image!,
+                          fit: BoxFit.cover,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withOpacity(0.4),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )
+              )
               : Container(
                   height: 320.h,
                   width: double.infinity,
                   color: Colors.grey.shade300,
                   child: Icon(Icons.person, size: 60.sp, color: Colors.grey),
                 ),
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(12.r),
-              child: CircleAvatar(
-                radius: 20.r,
-                backgroundColor: Colors.black.withOpacity(0.4),
-                child: BackButton(
-                  style: ButtonStyle(
-                    iconSize: WidgetStatePropertyAll(20.sp),
+              SizedBox(height: 10.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "${vendor.firstname ?? ''} ${vendor.lastname ?? ''}",
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w500,
+                      color: primaryColor,
+                    ),
                   ),
-                  color: Colors.white,
+                   Row(
+                children: [
+                  ...List.generate(
+                    2,
+                    (_) => Icon(
+                      Icons.star_rounded,
+                      color: Colors.amber,
+                      size: 20.sp,
+                    ),
+                  ),
+                  Icon(
+                    Icons.star_half_rounded,
+                    color: Colors.amber,
+                    size: 20.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    "4.5",
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+            
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: infoRow("assets/Hang Up.svg", vendor.phoneNumber ?? "")),
+                  Expanded(child: infoRow("assets/location.svg", vendor.country ?? "")),
+                  Expanded(child: infoRow("assets/letter.svg", vendor.email ?? "")),
+                
+                ],
+              ),
+              // SizedBox(height: 20.h),
+                
+              // sectionTitle("vendor_services".tr),
+              // SizedBox(height: 8.h),
+              // Wrap(
+              //   spacing: 8.w,
+              //   runSpacing: 8.h,
+              //   children: List.generate(
+              //     (vendor.services ?? []).length,
+              //     (index) {
+              //       final service = vendor.services![index];
+              //       final List<Color> chipColors = [
+              //         Colors.blueAccent.withOpacity(0.15),
+              //         Colors.redAccent.withOpacity(0.15),
+              //         Colors.greenAccent.withOpacity(0.2),
+              //       ];
+              //       final backgroundColor =
+              //           chipColors[index % chipColors.length];
+                
+              //       return Chip(
+              //         backgroundColor: backgroundColor,
+              //         label: Text(
+              //           service,
+              //           style: TextStyle(
+              //             color: Colors.black87,
+              //             fontWeight: FontWeight.bold,
+              //             fontSize: 12.sp,
+              //           ),
+              //         ),
+              //       );
+              //     },
+              //   ),
+              // ),
+              SizedBox(height: 8.h),
+                
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  sectionTitle("vendor_portfolio".tr),
+                  if (vendorId == currentUserId &&
+                      currentUserRole == "vendor")
+                   ElevatedButton.icon(
+              onPressed: () {
+                showPortfolioPicker(context, vendor.id);
+              },
+              icon: Icon(Icons.link, size: 12.sp, color: Colors.white),
+              label: Text(
+                "Link Portfolio".tr,
+                style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 8.sp,
+          color: Colors.white,
                 ),
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: FractionallySizedBox(
-              heightFactor: 0.72,
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(32.r),
-                    topRight: Radius.circular(32.r),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 12,
-                      offset: Offset(0, -4),
-                    ),
-                  ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
                 ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${vendor.firstname ?? ''} ${vendor.lastname ?? ''}",
-                        style: TextStyle(
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Row(
-                        children: [
-                          ...List.generate(
-                            4,
-                            (_) => Icon(
-                              Icons.star_rounded,
-                              color: Colors.amber,
-                              size: 20.sp,
-                            ),
-                          ),
-                          Icon(
-                            Icons.star_half_rounded,
-                            color: Colors.amber,
-                            size: 20.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            "4.5",
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16.h),
-                      infoRow(Icons.phone, vendor.phoneNumber ?? ""),
-                      infoRow(Icons.email, vendor.email ?? ""),
-                      infoRow(Icons.location_on, vendor.country ?? ""),
-                      SizedBox(height: 20.h),
-
-                      sectionTitle("vendor_services".tr),
-                      SizedBox(height: 8.h),
-                      Wrap(
-                        spacing: 8.w,
-                        runSpacing: 8.h,
-                        children: List.generate(
-                          (vendor.services ?? []).length,
-                          (index) {
-                            final service = vendor.services![index];
-                            final List<Color> chipColors = [
-                              Colors.blueAccent.withOpacity(0.15),
-                              Colors.redAccent.withOpacity(0.15),
-                              Colors.greenAccent.withOpacity(0.2),
-                            ];
-                            final backgroundColor =
-                                chipColors[index % chipColors.length];
-
-                            return Chip(
-                              backgroundColor: backgroundColor,
-                              label: Text(
-                                service,
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.sp,
-                                ),
+                elevation: 4,
+              ),
+                ),
+                
+                ],
+              ),
+              SizedBox(height: 12.h),
+                
+              Obx(() {
+                if (controller.loadingLinkedPortfolios.value) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (controller.linkedPortfolios.isEmpty) {
+                  return Text(
+                    "No portfolios linked yet.",
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                  );
+                }
+                
+                return SizedBox(
+                  height: 160.h,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: controller.linkedPortfolios.length,
+                    padding: EdgeInsets.only(left: 4.w),
+                    itemBuilder: (context, index) {
+                      final p =
+                          controller.linkedPortfolios[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Get.to(PortfolioDetailScreen(portfolio: p));
+                        },
+                        child: Container(
+                          width: 320.w,
+                          margin: EdgeInsets.only(right: 14.w),
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withOpacity(0.08),
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 20.h),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          sectionTitle("vendor_portfolio".tr),
-                          if (vendorId == currentUserId &&
-                              currentUserRole == "vendor")
-                           ElevatedButton.icon(
-  onPressed: () {
-    showPortfolioPicker(context, vendor.id);
-  },
-  icon: Icon(Icons.link, size: 12.sp, color: Colors.white),
-  label: Text(
-    "Link Portfolio".tr,
-    style: TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 8.sp,
-      color: Colors.white,
-    ),
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: primaryColor,
-    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16.r),
-    ),
-    elevation: 4,
-  ),
-),
-
-                        ],
-                      ),
-                      SizedBox(height: 12.h),
-
-                      Obx(() {
-                        if (controller.loadingLinkedPortfolios.value) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                        if (controller.linkedPortfolios.isEmpty) {
-                          return Text(
-                            "No portfolios linked yet.",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey,
-                            ),
-                          );
-                        }
-
-                        return SizedBox(
-                          height: 160.h,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: controller.linkedPortfolios.length,
-                            padding: EdgeInsets.only(left: 4.w),
-                            itemBuilder: (context, index) {
-                              final p =
-                                  controller.linkedPortfolios[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Get.to(PortfolioDetailScreen(portfolio: p));
-                                },
-                                child: Container(
-                                  width: 260.w,
-                                  margin: EdgeInsets.only(right: 14.w),
-                                  decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.circular(20.r),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withOpacity(0.08),
-                                        blurRadius: 8,
-                                        offset: Offset(0, 4),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(12.r),
+                            child: Stack(
+                              children: [
+                                p.images != null &&
+                                        p.images.isNotEmpty
+                                    ? Image.network(
+                                        p.images[0],
+                                        width: 320.w,
+                                        height: 160.h,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        width: 330.w,
+                                        height: 180.h,
+                                        color: Colors
+                                            .grey.shade200,
+                                        child: Icon(
+                                          Icons.image,
+                                          size: 32.sp,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius:
-                                        BorderRadius.circular(20.r),
-                                    child: Stack(
-                                      children: [
-                                        p.images != null &&
-                                                p.images.isNotEmpty
-                                            ? Image.network(
-                                                p.images[0],
-                                                width: 260.w,
-                                                height: 160.h,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Container(
-                                                width: 260.w,
-                                                height: 160.h,
-                                                color: Colors
-                                                    .grey.shade200,
-                                                child: Icon(
-                                                  Icons.image,
-                                                  size: 32.sp,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                        Container(
-                                          width: 260.w,
-                                          height: 160.h,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.black
-                                                    .withOpacity(0.6),
-                                                Colors.transparent,
-                                              ],
-                                              begin:
-                                                  Alignment.bottomCenter,
-                                              end: Alignment.topCenter,
-                                            ),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          left: 12.w,
-                                          bottom: 12.h,
-                                          right: 12.w,
-                                          child: Text(
-                                            p.title ?? "Untitled",
-                                            maxLines: 2,
-                                            overflow:
-                                                TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14.sp,
-                                              shadows: [
-                                                Shadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.4),
-                                                  offset: Offset(0, 1),
-                                                  blurRadius: 4,
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                Container(
+                                  height: 160.h,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black
+                                            .withValues(alpha: 0.6),
+                                        Colors.transparent,
                                       ],
+                                      begin:
+                                          Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        );
-                      }),
-                      SizedBox(height: 20.h),
-
-                      sectionTitle("vendor_ratings_reviews".tr),
-                      SizedBox(height: 10.h),
-                      Obx(() {
-                        if (controller.reviewList.isEmpty) {
-                          return Text(
-                            "No reviews yet.",
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: Colors.grey,
-                            ),
-                          );
-                        }
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: controller.reviewList.length,
-                          itemBuilder: (context, index) {
-                            final review =
-                                controller.reviewList[index];
-                            return buildReviewTile(
-                              review.comment,
-                              review.rating,
-                            );
-                          },
-                        );
-                      }),
-                      buildAddReviewSection(vendor),
-                      SizedBox(height: 20.h),
-
-                      sectionTitle("vendor_social_links".tr),
-                      ...vendor.urls.map(
-                        (link) => buildSocialLink(
-                          // link.name ?? "Unknown",
-                          // link.url ?? "",
-                          link.image,
-                        ),
-                      ),
-                      SizedBox(height: 20.h),
-                    ],
-                  ),
+                                Positioned(
+              top: 12.h,
+              left: 12.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                decoration: BoxDecoration(
+          color: primaryColor,
+          borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+          p.title ?? "Untitled",
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 8.sp,
+          ),
                 ),
               ),
-            ),
+                ),
+                Positioned(
+              bottom: 12.h,
+              right: 12.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                decoration: BoxDecoration(
+          border: Border.all(color: primaryColor),
+          borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+          "View more".tr,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 8.sp,
           ),
-        ],
+                ),
+              ),
+                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }),
+              SizedBox(height: 20.h),
+                
+              sectionTitle("vendor_ratings_reviews".tr),
+              SizedBox(height: 10.h),
+              Obx(() {
+                if (controller.reviewList.isEmpty) {
+                  return Text(
+                    "No reviews yet.".tr,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: controller.reviewList.length,
+                  itemBuilder: (context, index) {
+                    final review =
+                        controller.reviewList[index];
+                    return buildReviewTile(
+                      review.user.email,
+                      review.rating,
+                      review.comment,
+                    );
+                  },
+                );
+              }),
+              buildAddReviewSection(vendor),
+              SizedBox(height: 20.h),
+                
+              sectionTitle("vendor_social_links".tr),
+              SizedBox(height:6.h),
+              SizedBox(
+              height: 50.h,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: vendor.urls
+            .map((link) => buildSocialLink(link))
+            .toList(),
+              ),
+                ),
+                
+              SizedBox(height: 20.h),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget infoRow(IconData icon, String text) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
-      child: Row(
-        children: [
-          Icon(icon, size: 18.sp, color: primaryColor.withOpacity(0.8)),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: Colors.grey.shade800,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.3,
-              ),
+ Widget infoRow(String icon, String text) {
+  return Padding(
+    padding: EdgeInsets.only(bottom: 10.h),
+    child: Row(
+      children: [
+        SvgPicture.asset(icon, width: 18.sp, height: 18.sp, colorFilter: ColorFilter.mode(primaryColor.withValues(alpha: 0.8), BlendMode.srcIn)),
+        SizedBox(width: 8.w),
+        Flexible( // <- this is safer
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 10.sp,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.3,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget sectionTitle(String title) {
     return Text(
       title,
       style: TextStyle(
         fontSize: 16.sp,
-        fontWeight: FontWeight.bold,
-        color: primaryColor,
-        letterSpacing: 0.4,
+        color: Colors.black,
       ),
     );
   }
 
-  Widget buildReviewTile(String name, int stars) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
-      padding: EdgeInsets.all(14.r),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+ Widget buildReviewTile(String name, int stars, String comment) {
+  return Container(
+    margin: EdgeInsets.symmetric(vertical: 10.h),
+    padding: EdgeInsets.all(14.r),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16.r),
+      border: Border.all(color: Colors.grey.shade200, width: 1.2),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          backgroundImage: NetworkImage(
+            "https://i.pravatar.cc/150?img=${name.hashCode % 70}",
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            backgroundImage: NetworkImage(
-              "https://i.pravatar.cc/150?img=${name.hashCode % 70}",
-            ),
-            radius: 22.r,
-          ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Row(
-                  children: List.generate(
-                    5,
-                    (index) => Icon(
-                      index < stars
-                          ? Icons.star_rounded
-                          : Icons.star_border_rounded,
-                      color: index < stars
-                          ? Colors.amber
-                          : Colors.grey.shade300,
-                      size: 18.sp,
+          radius: 24.r,
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Name + Stars Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
                     ),
                   ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  "Great experience! Highly recommended!",
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey.shade700,
+                  Row(
+                    children: List.generate(
+                      5,
+                      (index) => Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 1.w),
+                        child: Icon(
+                          index < stars
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: index < stars
+                              ? Colors.amber
+                              : Colors.grey.shade300,
+                          size: 16.sp,
+                        ),
+                      ),
+                    ),
                   ),
+                ],
+              ),
+
+              SizedBox(height: 8.h),
+
+              // Comment
+              Text(
+                comment,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: Colors.grey.shade800,
+                  height: 1.4,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget buildAddReviewSection(VendorModel vendor) {
     final TextEditingController reviewCtrl = TextEditingController();
@@ -504,12 +511,40 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 20.h),
-        sectionTitle("vendor_add_review_title".tr),
-        SizedBox(height: 10.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            sectionTitle("vendor_add_review_title".tr),
+            SizedBox(width: 10.w),
+ Obx(
+  () => Row(
+    children: List.generate(
+      5,
+      (index) => IconButton(
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints(),
+        icon: Icon(
+          index < selectedStars.value
+              ? Icons.star_rounded
+              : Icons.star_border_rounded,
+          color: Colors.amber,
+          size: 16.sp,
+        ),
+        onPressed: () {
+          selectedStars.value = index + 1;
+        },
+      ),
+    ),
+  ),
+),
+
+          ],
+        ),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: reviewCtrl,
-          maxLines: 3,
-          style: TextStyle(fontSize: 14.sp),
+          maxLines: 6,
+          style: TextStyle(fontSize: 10.sp),
           decoration: InputDecoration(
             hintText: "vendor_add_review_hint".tr,
             border: OutlineInputBorder(
@@ -518,125 +553,81 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
             contentPadding: EdgeInsets.all(12.r),
           ),
         ),
+      
         SizedBox(height: 10.h),
         Obx(
-          () => Row(
-            children: List.generate(
-              5,
-              (index) => IconButton(
-                icon: Icon(
-                  index < selectedStars.value
-                      ? Icons.star_rounded
-                      : Icons.star_border_rounded,
-                  color: Colors.amber,
-                  size: 24.sp,
+          () => Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              width: 100.w,
+              height: 30.h,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
                 ),
                 onPressed: () {
-                  selectedStars.value = index + 1;
+                  controller.addReview(
+                    vendorId: vendor.id,
+                    comment: reviewCtrl.text,
+                    rating: selectedStars.value,
+                  );
                 },
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 10.h),
-        Obx(
-          () => SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-              ),
-              onPressed: () {
-                controller.addReview(
-                  vendorId: vendor.id,
-                  comment: reviewCtrl.text,
-                  rating: selectedStars.value,
-                );
-                reviewCtrl.clear();
-                selectedStars.value = 0;
-              },
-              child: controller.reviewloading.value
-                  ? SizedBox(
-                      height: 18.h,
-                      width: 18.h,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
+                child: controller.reviewloading.value
+                    ? SizedBox(
+                        height: 18.h,
+                        width: 18.h,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        "vendor_add_review_submit".tr,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.sp,
+                        ),
                       ),
-                    )
-                  : Text(
-                      "vendor_add_review_submit".tr,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13.sp,
-                      ),
-                    ),
+              ),
             ),
           ),
         ),
       ],
     );
   }
+Widget buildSocialLink(SocialLink link) {
+  final imageUrl = link.image ?? '';
+  final linkUrl = link.url ?? '';
 
-  Widget buildSocialLink( String? iconUrl) {
-    return GestureDetector(
-      onTap: () async {
-        final Uri url = Uri.parse(iconUrl!);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        } else {
-          Get.snackbar("Error", "Could not launch $iconUrl");
-        }
-      },
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(vertical: 4.h),
-        leading: CircleAvatar(
-          backgroundImage:
-              iconUrl != null && iconUrl.isNotEmpty
-                  ? NetworkImage(iconUrl)
-                  : null,
-          backgroundColor: Colors.grey.shade200,
-          radius: 20.r,
-          child:
-              iconUrl == null || iconUrl.isEmpty
-                  ? Icon(Icons.public, color: primaryColor, size: 18.sp)
-                  : null,
-        ),
-        // title: Text(
-        //   platform,
-        //   style: TextStyle(
-        //     fontWeight: FontWeight.bold,
-        //     fontSize: 13.sp,
-        //     color: Colors.black87,
-        //   ),
-        // ),
-        // subtitle: GestureDetector(
-        //   onTap: () async {
-        //     final Uri url = Uri.parse(link);
-        //     if (await canLaunchUrl(url)) {
-        //       await launchUrl(url, mode: LaunchMode.externalApplication);
-        //     } else {
-        //       Get.snackbar("Error", "Could not launch $link");
-        //     }
-        //   },
-        //   child: Text(
-        //     link,
-        //     style: TextStyle(
-        //       fontSize: 12.sp,
-        //       color: Colors.blue,
-        //       decoration: TextDecoration.underline,
-        //     ),
-        //   ),
-        // ),
-        trailing: Icon(Icons.arrow_forward_ios, size: 14.sp, color: Colors.grey),
+  return GestureDetector(
+    onTap: () async {
+      final Uri uri = Uri.parse(linkUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Get.snackbar("Error", "Could not launch $linkUrl");
+      }
+    },
+    child: Padding(
+      padding: EdgeInsets.only(right: 8.w),
+      child: CircleAvatar(
+        radius: 20.r,
+        backgroundColor: Colors.grey.shade200,
+        backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+        child: imageUrl.isEmpty
+            ? Icon(Icons.public, color: primaryColor, size: 18.sp)
+            : null,
       ),
-    );
-  }
+    ),
+  );
+}
+
+
 
   void showPortfolioPicker(BuildContext context, String vendorId) {
     Get.bottomSheet(

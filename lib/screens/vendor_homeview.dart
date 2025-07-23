@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/services_controller.dart';
 import 'package:joya_app/controllers/userprofile_controller.dart';
@@ -10,8 +11,8 @@ import 'package:joya_app/screens/usser_profile_screen.dart';
 import 'package:joya_app/screens/vendor_portfolio_screen.dart';
 import 'package:joya_app/utils/colors.dart';
 import 'package:joya_app/widgets/shimmer.dart';
-import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class VendorHomeScreen extends StatefulWidget {
   const VendorHomeScreen({super.key});
@@ -24,6 +25,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   int _selectedIndex = 0;
   String? userCountry;
   String? username;
+final RxInt currentIndex = 0.obs;
 
   final UserProfileController userProfileController = Get.put(UserProfileController());
   final ServicesController servicesController = Get.put(ServicesController());
@@ -75,47 +77,164 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      body: _buildBody(),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 10.h),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30.r),
-          child: Container(
-            color: Colors.grey.shade100,
-            child: SizedBox(
-              height: 54.h,
-              child: SalomonBottomBar(
-                currentIndex: _selectedIndex,
-                onTap: _onItemTapped,
-                backgroundColor: primaryColor,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.grey.shade200,
-                itemPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
-                items: [
-                  SalomonBottomBarItem(
-                    icon: Icon(Icons.home),
-                    title: Text("Home", style: TextStyle(fontSize: 12.sp)),
-                    selectedColor: Colors.white,
-                  ),
-                  SalomonBottomBarItem(
-                    icon: Icon(Icons.portrait),
-                    title: Text("Portfolio", style: TextStyle(fontSize: 12.sp)),
-                    selectedColor: Colors.white,
-                  ),
-                  SalomonBottomBarItem(
-                    icon: Icon(Icons.person),
-                    title: Text("Profile", style: TextStyle(fontSize: 12.sp)),
-                    selectedColor: Colors.white,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+body: _buildBody(),
+    bottomNavigationBar: buildBottomNavBar(),
     );
   }
 
+Widget buildBottomNavBar() {
+  return Padding(
+padding: EdgeInsets.only(left: 24.w, right: 24.w, bottom: 12.h),
+    child: Container(
+      height: 60.h,
+      decoration: BoxDecoration(
+        border: Border.all(color: primaryColor.withOpacity(0.3)),
+color: Color(0xffE1DBFF),
+        borderRadius: BorderRadius.circular(40.r),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _selectedIndex = 0),
+            child: Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                color: _selectedIndex == 0 ? primaryColor : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                "assets/home.svg",
+                colorFilter: _selectedIndex == 0
+                    ? ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                    : ColorFilter.mode(primaryColor.withOpacity(0.8), BlendMode.srcIn),
+                height: 24.sp,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _selectedIndex = 1),
+            child: Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                color: _selectedIndex == 1 ? primaryColor : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                "assets/home.svg",
+                colorFilter: _selectedIndex == 1
+                    ? ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                    : ColorFilter.mode(primaryColor.withOpacity(0.8), BlendMode.srcIn),
+                height: 24.sp,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _selectedIndex = 2),
+            child: Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                color: _selectedIndex == 2 ? primaryColor : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                "assets/vendors.svg",
+                colorFilter: _selectedIndex == 2
+                    ? ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                    : ColorFilter.mode(primaryColor.withOpacity(0.8), BlendMode.srcIn),
+                height: 24.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+Widget buildAdsSection() {
+  return Obx(() {
+    if (servicesController.adsList.isEmpty) {
+      return Container(
+        height: 180.h,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Center(
+          child: Text(
+            "No Ads Available",
+            style: TextStyle(color: Colors.grey, fontSize: 16.sp),
+          ),
+        ),
+      );
+    }
+
+    return CarouselSlider.builder(
+      itemCount: servicesController.adsList.length,
+      itemBuilder: (context, index, realIndex) {
+        final ad = servicesController.adsList[index];
+        return Stack(
+          children: [
+            /// Background Image
+            Container(
+              width: double.infinity,
+              margin: EdgeInsets.zero,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Image.network(
+                  ad.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 180.h,
+                ),
+              ),
+            ),
+
+          
+
+            Positioned(
+              bottom: 12.h,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Obx(() => AnimatedSmoothIndicator(
+                      activeIndex: currentIndex.value,
+                      count: servicesController.adsList.length,
+                      effect: ExpandingDotsEffect(
+                        dotHeight: 6.h,
+                        dotWidth: 6.h,
+                        spacing: 6.w,
+                        activeDotColor: Colors.white,
+                        dotColor: Colors.white54,
+                      ),
+                    )),
+              ),
+            ),
+          ],
+        );
+      },
+      options: CarouselOptions(
+        height: 180.h,
+        autoPlay: true,
+        enlargeCenterPage: true,
+        viewportFraction: 0.9,
+        onPageChanged: (index, reason) {
+          currentIndex.value = index;
+        },
+      ),
+    );
+  });
+}
   Widget _buildBody() {
     if (_selectedIndex == 0) {
       return buildHomeContent();
@@ -125,6 +244,50 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       return UserProfileScreen();
     }
   }
+Widget buildTopBar() {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+             CircleAvatar(
+              backgroundColor: Colors.white,
+              radius: 20.r,
+              child: ClipOval(
+                child: Image.asset(
+                  "assets/user.jpg",
+                  fit: BoxFit.cover,
+                  height: 40.h,
+                  width: 40.w,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Hi, $username",
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w400),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Elevate Your Business with Joya",
+                  style: TextStyle(fontSize: 8.sp, fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+            SizedBox(width: 12.w),
+           
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget buildHomeContent() {
     return SafeArea(
@@ -132,124 +295,56 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
         child: Column(
           children: [
             SizedBox(height: 20.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Hii, $username",
-                          style: TextStyle(fontSize: 25.sp, fontWeight: FontWeight.w400),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          "Elevate Your Business with Joya",
-                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w300),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 20.r,
-                    child: ClipOval(
-                      child: Image.asset(
-                        "assets/user.jpg",
-                        fit: BoxFit.cover,
-                        height: 30.h,
-                        width: 30.w,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 6.h),
+           buildTopBar(),
+            SizedBox(height: 12.h),
+             Padding(
+  padding: EdgeInsets.symmetric(horizontal: 10.w),
+  child: TextField(
+    controller: searchController,
+    onChanged: (value) => setState(() {}),
+    decoration: InputDecoration(
+      hintText: "Search",
+      hintStyle: TextStyle(
+        color: Colors.grey.shade400,
+        fontSize: 14.sp,
+      ),
+      prefixIcon: SvgPicture.asset("assets/Magnifer.svg", height: 20.h),
+      filled: true,
+      fillColor: Colors.transparent, // or backgroungcolor if needed
+      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(
+          color: Colors.grey.shade300, // light gray border
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(
+          color: Colors.grey.shade400,
+          width: 1,
+        ),
+      ),
+    ),
+  ),
+),
+SizedBox(height: 12.h),
 
-            Obx(() {
-              if (servicesController.isLoadingAds.value) {
-                return SizedBox(
-                  height: 180.h,
-                  child: Center(child: CircularProgressIndicator(color: Colors.white)),
-                );
-              }
-              if (servicesController.adsList.isEmpty) {
-                return SizedBox(
-                  height: 180.h,
-                  child: Center(
-                    child: Text("No Ads found", style: TextStyle(fontSize: 16.sp, color: Colors.white)),
-                  ),
-                );
-              }
-
-              return CarouselSlider(
-                options: CarouselOptions(
-                  height: 180.h,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                  viewportFraction: 0.9,
-                  aspectRatio: 16 / 9,
-                  autoPlayInterval: const Duration(seconds: 3),
-                ),
-                items: servicesController.adsList.map((ad) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(20.r),
-                    child: Image.network(
-                      ad.imageUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(Icons.broken_image, size: 40, color: Colors.white),
-                    ),
-                  );
-                }).toList(),
-              );
-            }),
-
-            SizedBox(height: 20.h),
+            buildAdsSection(),
+            SizedBox(height: 12.h),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12.w),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  "Services".tr,
-                  style: TextStyle(fontSize: 30.sp, fontWeight: FontWeight.w400),
-                ),
-              ),
-            ),
-
-            SizedBox(height: 10.h),
-
-            // 🔍 Search Field
-           Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: TextField(
-            controller: searchController,
-            onChanged: (value) => setState(() {}),
-            decoration: InputDecoration(
-              hintText: "Search services...",
-              prefixIcon: Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
-              ),
-            ),
+                child:  Text(
+            "Services".tr,
+            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w400),
           ),
-        ),
-
-            SizedBox(height: 10.h),
+              ),
+            ),
+            SizedBox(height: 12.h),
 
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -285,21 +380,19 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
                   );
                 }
 
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16.w,
-                    mainAxisSpacing: 16.h,
-                    childAspectRatio: 0.85,
-                  ),
-                  itemCount: filteredServices.length,
-                  itemBuilder: (context, index) {
-                    final item = filteredServices[index];
-                    return _buildGridItem(item);
-                  },
-                );
+                return ListView.builder(
+  shrinkWrap: true,
+  physics: NeverScrollableScrollPhysics(),
+  itemCount: filteredServices.length,
+  itemBuilder: (context, index) {
+    final item = filteredServices[index];
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: _buildGridItem(item),
+    );
+  },
+);
+
               }),
             ),
 
@@ -309,82 +402,193 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
       ),
     );
   }
-
-  Widget _buildGridItem(ServiceModel item) {
-    return InkWell(
-      onTap: () {
-        Get.to(() => AllVendorsScreen(country: userCountry!, service: item.title));
-      },
-      child: Container(
-        width: 120.w,
-        height: 160.h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 8.r,
-              offset: Offset(0, 4.h),
-            )
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12.r),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Image.network(
-                  item.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.white,
-                    child: Icon(Icons.broken_image, color: Colors.grey),
-                  ),
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return Container(
-                      color: Colors.grey.shade100,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  },
-                ),
+Widget _buildGridItem(ServiceModel item) {
+  return InkWell(
+    onTap: () {
+      Get.to(() => AllVendorsScreen(country: userCountry!, service: item.title));
+    },
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+      
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.all( Radius.circular(16.r)),
+            child: Image.network(
+              item.imageUrl,
+              height: 214.h,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.white,
+                height: 140.h,
+                child: Icon(Icons.broken_image, color: Colors.grey),
               ),
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return Container(
+                  color: Colors.grey.shade100,
+                  height: 140.h,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w500,
+                    color: primaryColor,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+  
+                Row(
+                  children: [
+                    SvgPicture.asset("assets/vendors.svg", height: 20.h),
+                                          SizedBox(width: 4.w),
+                    Text(
+                      "${item.vendorCount} vendors",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    Spacer(),
+                     SizedBox(
+                  width: 90.w,
+                  height: 28.h,
+                  child: ElevatedButton(
+                    onPressed: 
+                        () {
+                            Get.to(() => AllVendorsScreen(
+                                  country: userCountry!,
+                                  service: item.title,
+                                ));
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      padding: EdgeInsets.zero,
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "view more",
+                          style: TextStyle(
+                            fontSize: 8.sp,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(Icons.arrow_forward, size: 14.sp,color: Colors.white,),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 8.r,
-                right: 8.r,
-                bottom: 12.r,
-                child: Text(
-                  item.title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14.sp,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black45,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
+              
+                  ],
+                  
                 ),
-              )
-            ],
+              SizedBox(height: 28.h), 
+              ],
+            ),
           ),
-        ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+  // Widget _buildGridItem(ServiceModel item) {
+  //   return InkWell(
+  //     onTap: () {
+  //       Get.to(() => AllVendorsScreen(country: userCountry!, service: item.title));
+  //     },
+  //     child: Container(
+  //       width: 120.w,
+  //       height: 160.h,
+  //       decoration: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(12.r),
+  //         boxShadow: [
+  //           BoxShadow(
+  //             color: Colors.grey.shade300,
+  //             blurRadius: 8.r,
+  //             offset: Offset(0, 4.h),
+  //           )
+  //         ],
+  //       ),
+  //       child: ClipRRect(
+  //         borderRadius: BorderRadius.circular(12.r),
+  //         child: Stack(
+  //           children: [
+  //             Positioned.fill(
+  //               child: Image.network(
+  //                 item.imageUrl,
+  //                 fit: BoxFit.cover,
+  //                 errorBuilder: (context, error, stackTrace) => Container(
+  //                   color: Colors.white,
+  //                   child: Icon(Icons.broken_image, color: Colors.grey),
+  //                 ),
+  //                 loadingBuilder: (context, child, progress) {
+  //                   if (progress == null) return child;
+  //                   return Container(
+  //                     color: Colors.grey.shade100,
+  //                     child: Center(child: CircularProgressIndicator()),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //             Positioned.fill(
+  //               child: Container(
+  //                 decoration: BoxDecoration(
+  //                   gradient: LinearGradient(
+  //                     colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+  //                     begin: Alignment.topCenter,
+  //                     end: Alignment.bottomCenter,
+  //                   ),
+  //                 ),
+  //               ),
+  //             ),
+  //             Positioned(
+  //               left: 8.r,
+  //               right: 8.r,
+  //               bottom: 12.r,
+  //               child: Text(
+  //                 item.title,
+  //                 textAlign: TextAlign.center,
+  //                 style: TextStyle(
+  //                   color: Colors.white,
+  //                   fontWeight: FontWeight.bold,
+  //                   fontSize: 14.sp,
+  //                   shadows: [
+  //                     Shadow(
+  //                       color: Colors.black45,
+  //                       offset: Offset(0, 1),
+  //                       blurRadius: 2,
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             )
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }

@@ -24,6 +24,7 @@ dependencies:
   intl: ^0.20.2
   salomon_bottom_bar: ^3.3.2
   flutter_svg: ^2.2.0
+  smooth_page_indicator: ^1.2.1
   # flutter_file_picker_web: ^1.0.0
 
 dev_dependencies:

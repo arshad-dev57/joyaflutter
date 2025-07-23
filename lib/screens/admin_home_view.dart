@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/po4rtfolio_controller.dart';
 import 'package:joya_app/controllers/user_controller.dart';
@@ -11,7 +12,6 @@ import 'package:joya_app/screens/adminsociallink.dart';
 import 'package:joya_app/screens/all_users_screen.dart';
 import 'package:joya_app/screens/usser_profile_screen.dart';
 import 'package:joya_app/utils/colors.dart';
-import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -24,141 +24,211 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int selectedIndex = 0;
   final PortfolioController controller = Get.put(PortfolioController());
   final UsersController usercontroller = Get.put(UsersController());
-
-  void _onItemTapped(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-  }
-
+final TextEditingController searchController = TextEditingController();
+  
+var _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
-    final pages = [buildDashboard(), UserProfileScreen()];
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: SafeArea(child: pages[selectedIndex]),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 10.h),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30.r),
-          child: Container(
-            color: Colors.grey.shade100,
-            child: SizedBox(
-              height: 54.h,
-              child: SalomonBottomBar(
-                currentIndex: selectedIndex,
-                onTap: _onItemTapped,
-                backgroundColor: primaryColor,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.grey.shade200,
-                itemPadding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 8.h,
-                ),
-                items: [
-                  SalomonBottomBarItem(
-                    icon: Icon(Icons.home),
-                    title: Text("Home", style: TextStyle(fontSize: 12.sp)),
-                    selectedColor: Colors.white,
-                  ),
-                  SalomonBottomBarItem(
-                    icon: Icon(Icons.person),
-                    title: Text("Profile", style: TextStyle(fontSize: 12.sp)),
-                    selectedColor: Colors.white,
-                  ),
-                ],
+      backgroundColor: backgroungcolor,
+      body: SafeArea(child: _selectedIndex == 0 ? buildDashboard() : UserProfileScreen()),
+      bottomNavigationBar:Padding(
+    padding: EdgeInsets.only(left:100.w, right: 100.w, bottom: 12.h),
+    child: Container(
+
+      height: 55.h,
+      decoration: BoxDecoration(
+        border: Border.all(color: primaryColor.withOpacity(0.3)),
+color: Color(0xffE1DBFF),
+        borderRadius: BorderRadius.circular(40.r),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _selectedIndex = 0),
+            child: Container(
+              padding: EdgeInsets.all(6.r),
+              decoration: BoxDecoration(
+                color: _selectedIndex == 0 ? primaryColor : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                "assets/home.svg",
+                colorFilter: _selectedIndex == 0
+                    ? ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                    : ColorFilter.mode(primaryColor.withValues(alpha: 0.8), BlendMode.srcIn),
+                height: 24.sp,
               ),
             ),
           ),
+          GestureDetector(
+            onTap: () => setState(() => _selectedIndex = 1),
+            child: Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                color: _selectedIndex == 1 ? primaryColor : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                "assets/vendors.svg",
+                colorFilter: _selectedIndex == 1
+                    ? ColorFilter.mode(Colors.white, BlendMode.srcIn)
+                    : ColorFilter.mode(primaryColor.withValues(alpha: 0.8), BlendMode.srcIn),
+                height: 24.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  )
+  );    
+    
+  }
+Widget buildTopBar() {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+             CircleAvatar(
+              backgroundColor: Colors.white,
+              radius: 20.r,
+              child: ClipOval(
+                child: Image.asset(
+                  "assets/user.jpg",
+                  fit: BoxFit.cover,
+                  height: 40.h,
+                  width: 40.w,
+                ),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Hi,Admin",
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w400),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  "Elevate Your Business with Joya",
+                  style: TextStyle(fontSize: 8.sp, fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+            SizedBox(width: 12.w),
+           
+          ],
         ),
       ),
     );
   }
-
   Widget buildDashboard() {
     return Padding(
-      padding: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(8.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// Top Bar
-          Row(
-            children: [
-              Image.asset('assets/joya.png', height: 40.h),
-              Spacer(),
-              Text(
-                'Admin',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
-                ),
-              ),
-              Spacer(),
-              CircleAvatar(
-                radius: 20.r,
-                backgroundImage: AssetImage('assets/user.jpg'),
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
+         buildTopBar(),
+          SizedBox(height: 12.h),
+          Padding(
+  padding: EdgeInsets.symmetric(horizontal: 10.w),
+  child: TextField(
+    controller: searchController,
+    onChanged: (value) => setState(() {}),
+    decoration: InputDecoration(
+      hintText: "Search",
+      hintStyle: TextStyle(
+        color: Colors.grey.shade400,
+        fontSize: 14.sp,
+      ),
+      prefixIcon: SvgPicture.asset("assets/Magnifer.svg", height: 20.h),
+      filled: true,
+      fillColor: Colors.transparent, // or backgroungcolor if needed
+      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(
+          color: Colors.grey.shade300, // light gray border
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(
+          color: Colors.grey.shade400,
+          width: 1,
+        ),
+      ),
+    ),
+  ),
+),
+          SizedBox(height: 12.h),
           Expanded(
             child: Obx(() {
               final metrics = [
                 {
                   'title': 'Users',
-                  'icon': Icons.person_outline,
+                  'icon': 'assets/alluser.svg',
                   'count': usercontroller.totalUsers.value,
                   'route': AllUsersScreen(),
                 },
                 {
                   'title': 'Vendors',
-                  'icon': Icons.storefront_outlined,
+                  'icon': 'assets/allvendor.svg',
                   'count': usercontroller.totalVendors.value,
                   'route': adminallvendorsscreen(),
                 },
                 {
                   'title': 'Ads',
-                  'icon': Icons.campaign_outlined,
+                  'icon': 'assets/adds.svg',
                   'count': usercontroller.totalAds.value,
                   'route': adminaddscreen(),
                 },
                 {
                   'title': 'Services',
-                  'icon': Icons.design_services_outlined,
+                  'icon': 'assets/service.svg',
                   'count': usercontroller.totalServices.value,
                   'route': AdminServiceScreen(),
                 },
                 {
                   'title': 'Payment Links',
-                  'icon': Icons.payment,
+                  'icon': 'assets/payment.svg',
                 "count" : usercontroller.totalPaymentLinks.value,
                   // 'count': usercontroller.totalPaymentLinks.value,
                   'route': AdminPaymentLinksScreen(),
                 },
               ];
 
-              return GridView.builder(
-                padding: EdgeInsets.only(bottom: 80.h),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.w,
-                  mainAxisSpacing: 16.h,
-                ),
-                itemCount: metrics.length,
-                itemBuilder: (context, index) {
-                  final item = metrics[index];
-                  return DashboardCard(
-                    title: item['title'] as String,
-                    icon: item['icon'] as IconData,
-                    count: item['count'] as int,
-                    onTap: () {
-                      Get.to(item['route'] as Widget);
-                    },
-                  );
-                },
-              );
+              return ListView.builder(
+  padding: EdgeInsets.only(bottom: 80.h),
+  shrinkWrap: true,
+  physics: NeverScrollableScrollPhysics(), // if nested
+  itemCount: metrics.length,
+  itemBuilder: (context, index) {
+    final item = metrics[index];
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: DashboardCard(
+        title: item['title'] as String,
+        icon:                     item['icon'] as String,
+        count: item['count'] as int,
+        onTap: () {
+          Get.to(item['route'] as Widget);
+        },
+      ),
+    );
+  },
+);
+
             }),
           ),
         ],
@@ -169,7 +239,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
 class DashboardCard extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final String icon;
   final int count;
   final VoidCallback onTap;
 
@@ -187,45 +257,60 @@ class DashboardCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
       child: Container(
-        padding: EdgeInsets.all(16.r),
+        height: 48.h,
+        padding: EdgeInsets.symmetric(horizontal: 8.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: backgroungcolor, 
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.shade300,
-              blurRadius: 8.r,
-              offset: Offset(0, 4.h),
-            ),
-          ],
+          border: Border.all(
+            color: const Color(0xFFE4DEFD), 
+            width: 1.2,
+          ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             Container(
-              height: 50.r,
-              width: 50.r,
+              height: 20.r,
+              width: 20.r,
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                // color: primaryColor.withOpacity(0.3),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: primaryColor, size: 26.sp),
+              child: SvgPicture.asset(icon, colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn), height: 20.sp),
             ),
-            SizedBox(height: 12.h),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15.sp,
-                color: Colors.black87,
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                ),
               ),
             ),
-            SizedBox(height: 4.h),
+
+            // Count
             Text(
               count.toString(),
               style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 18.sp,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+
+            SizedBox(width: 8.w),
+
+            // Right arrow in circle
+            Container(
+              height: 28.r,
+              width: 28.r,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE4DEFD),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14.sp,
                 color: primaryColor,
               ),
             ),
@@ -235,3 +320,5 @@ class DashboardCard extends StatelessWidget {
     );
   }
 }
+
+

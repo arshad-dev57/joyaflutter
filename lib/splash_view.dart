@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/splash_controller.dart';
-
+import 'package:joya_app/utils/colors.dart';
 class SplashView extends StatelessWidget {
    SplashView({super.key});
   final SplashController controller = Get.put(SplashController());
@@ -9,7 +9,7 @@ class SplashView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroungcolor,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,

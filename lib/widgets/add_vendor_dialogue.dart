@@ -129,7 +129,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           /// Service Categories
                           Text(
-                            "Service Categories *",
+                            "Service Categories ",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
@@ -213,7 +213,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           /// Role Dropdown
                           Text(
-                            "Role *",
+                            "Role",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
@@ -315,6 +315,7 @@ TextField(
     contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
   ),
 ),
+SizedBox(height: 8.h),
                                GestureDetector(
         onTap: () => controller.pickSocialIconImage(),
         child: Container(

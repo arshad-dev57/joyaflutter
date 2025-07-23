@@ -56,59 +56,77 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: backgroungcolor,
       appBar: AppBar(
-        elevation: 4,
-        backgroundColor: primaryColor,
-        centerTitle: true,
+        backgroundColor: backgroungcolor,
         title: Text(
           "Vendors",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20.sp,
-            color: Colors.white,
+            color: Colors.black,
             letterSpacing: 1.2,
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+          icon: SvgPicture.asset("assets/Arrow.svg", ),
           onPressed: () => Get.back(),
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.r),
+        padding: EdgeInsets.all(8.r),
         child: Column(
           children: [
             Row(
+              
               children: [
                 Expanded(
-                  child: Container(
-                    height: 40.h,
-                    child: TextFormField(
-                      controller: controller.searchController,
-                      decoration: inputDecoration(primaryColor, context).copyWith(
-                        hintText: "Search vendors...",
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
+                  child: TextField(
+                    controller: controller.searchController,
+                    onChanged: (value) =>                      controller.filterVendors(value),
+                  
+                    decoration: InputDecoration(
+                      hintText: "Search",
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        fontSize: 14.sp,
                       ),
-                                     onChanged: (value) {
-                     controller.filterVendors(value);
-                                     },
+                      prefixIcon: SvgPicture.asset("assets/Magnifer.svg", height: 20.h),
+                      filled: true,
+                      fillColor: Colors.transparent, 
+                      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300, 
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade400,
+                          width: 1,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(width: 12.w),
+                
+                SizedBox(width: 4.w),
                 if (currentUserRole != "user")
                   InkWell(
                     onTap: () {
                       Get.dialog(AddVendorDialog());
                     },
+
                     child: Container(
                       height: 40.h,
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            primaryColor.withOpacity(0.7),
+                            primaryColor.withValues(alpha: 0.7),
                             primaryColor,
                           ],
                         ),
@@ -134,7 +152,6 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
             ),
             SizedBox(height: 16.h),
 
-            /// Vendors List
             Expanded(
               child: Obx(() {
                 if (controller.isLoadingVendors.value) {
@@ -176,121 +193,124 @@ class _AllVendorsScreenState extends State<AllVendorsScreen> {
 Widget _buildVendorCard(VendorModel vendor) {
   return Stack(
     children: [
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (vendor.image != null && vendor.image!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-                child: Stack(
+      Padding(
+        padding:  EdgeInsets.symmetric(horizontal: 8.w),
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroungcolor,
+            borderRadius: BorderRadius.circular(20.r),
+           border: Border.all(color: Colors.grey.shade400),
+           
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (vendor.image != null && vendor.image!.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(10.r)),
+                  child: _buildVendorImage(vendor.image!),
+                ),
+              Padding(
+                padding: EdgeInsets.all(12.r),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildVendorImage(vendor.image!),
-                    Container(
-                      height: 160.h,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black.withOpacity(0.45),
-                            Colors.transparent,
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Wrap(
+                      spacing: 8.w,
+                      runSpacing: 6.h,
+                      children: List.generate(vendor.services.length, (index) {
+                        final service = vendor.services[index];
+                        return Container(
+                          padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            service,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }),
                     ),
-                    Positioned(
-                      left: 12.w,
-                      bottom: 12.h,
-                      child: Text(
-                        "${vendor.firstname} ${vendor.lastname}",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.6),
-                              blurRadius: 4,
+                  ),
+
+                    Text(                        "${vendor.firstname} ${vendor.lastname}",
+ style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                    ),),
+                    SizedBox(height: 14.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _infoRow("assets/Hang Up.svg", vendor.phoneNumber),
+                        _infoRow("assets/location.svg", vendor.country),
+                                            _infoRow("assets/Letter.svg", vendor.email),
+
+                      ],
+                    ),
+
+                    SizedBox(height: 14.h),
+                    
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: vendor.urls.map((urlModel) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12.r),
+                              child: Image.network(urlModel.image,
+                              height: 20.h,
+                              width: 20.w,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.error);
+                              },
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return CircularProgressIndicator(
+                                  value: progress.expectedTotalBytes != null
+                                      ? progress.cumulativeBytesLoaded / progress.expectedTotalBytes!
+                                      : null,
+                                );
+                              },
+                              ),
+                            ),
+                            Container(
+                              height: 30,
+                              width: 80,
+decoration: BoxDecoration(
+  border: Border.all(color: primaryColor),
+  borderRadius: BorderRadius.circular(10.r),
+),
+
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("View more",style: TextStyle(color: Colors.black,fontSize: 8.sp),),
+                                  SvgPicture.asset("assets/forward.svg", colorFilter: ColorFilter.mode(Colors.black, BlendMode.srcIn), height: 8.h),
+                                ],
+                              ),
                             )
                           ],
-                        ),
-                      ),
-                    )
+                        );
+                      }).toList(),
+                    ),
+        
+                    SizedBox(height: 14.h),
                   ],
                 ),
               ),
-            Padding(
-              padding: EdgeInsets.all(16.r),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _infoRow(Icons.phone, vendor.phoneNumber),
-                      _infoRow(Icons.location_on, vendor.country),
-                    ],
-                  ),
-                  SizedBox(height: 8.h),
-                  _infoRow(Icons.email, vendor.email),
-                  SizedBox(height: 8.h),
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 6.h,
-                    children: List.generate(vendor.services.length, (index) {
-                      final service = vendor.services[index];
-                      final List<Color> chipColors = [
-                        Colors.blueAccent.withOpacity(0.15),
-                        Colors.redAccent.withOpacity(0.15),
-                        Colors.greenAccent.withOpacity(0.2),
-                      ];
-                      final backgroundColor = chipColors[index % chipColors.length];
-                      return Chip(
-                        label: Text(
-                          service,
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 11.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        backgroundColor: backgroundColor,
-                        shape: StadiumBorder(),
-                      );
-                    }),
-                  ),
-                  SizedBox(height: 8.h),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: vendor.urls.map((urlModel) {
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 6.h),
-                        child: _infoRow(
-                          Icons.link,
-                          urlModel.url,
-                          onTap: () => launchUrl(Uri.parse(urlModel.url)),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-
-                  SizedBox(height: 14.h),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       if (vendor.createdBy == currentUserId && currentUserRole != "user")
@@ -331,11 +351,11 @@ Widget _buildVendorCard(VendorModel vendor) {
 
 
 
- Widget _infoRow(IconData icon, String value, {Function()? onTap}) {
+ Widget _infoRow(String icon, String value, {Function()? onTap}) {
   return Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Icon(icon, size: 18.sp, color: Colors.grey.shade600),
+      SvgPicture.asset(icon, colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn), height: 20.h),
       SizedBox(width: 8.w),
       InkWell(
         onTap: () {
@@ -346,7 +366,7 @@ Widget _buildVendorCard(VendorModel vendor) {
         child: Text(
         value,
         style: TextStyle(
-          fontSize: 13.5.sp,
+          fontSize: 12.sp,
           color: Colors.grey.shade800,
           fontWeight: FontWeight.w500,
         ),
@@ -363,11 +383,11 @@ Widget _buildVendorCard(VendorModel vendor) {
     if (ext == 'svg') {
       return SvgPicture.network(
         url,
-        height: 160.h,
+        height: 214.h,
         width: double.infinity,
         fit: BoxFit.cover,
         placeholderBuilder: (context) => Container(
-          height: 160.h,
+          height: 214.h,
           width: double.infinity,
           color: Colors.grey.shade200,
           child: Center(
@@ -378,11 +398,11 @@ Widget _buildVendorCard(VendorModel vendor) {
     } else {
       return Image.network(
         url,
-        height: 160.h,
+        height: 214.h,
         width: double.infinity,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
-          height: 160.h,
+          height: 214.h,
           width: double.infinity,
           color: Colors.grey.shade200,
           child: Icon(Icons.broken_image, color: Colors.grey),
@@ -390,7 +410,7 @@ Widget _buildVendorCard(VendorModel vendor) {
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
           return Container(
-            height: 160.h,
+            height: 214.h,
             width: double.infinity,
             color: Colors.grey.shade200,
             child: Center(
