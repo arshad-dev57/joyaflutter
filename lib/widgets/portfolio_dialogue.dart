@@ -14,7 +14,7 @@ class AddPortfolioDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: backgroungcolor,
       insetPadding: EdgeInsets.all(16.w),
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -41,8 +41,7 @@ class AddPortfolioDialog extends StatelessWidget {
                     "Add Portfolio",
                     style: TextStyle(
                       fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -50,14 +49,11 @@ class AddPortfolioDialog extends StatelessWidget {
 
                 buildTextField("Title", controller.titleCtrl),
                 buildTextField("Description", controller.descCtrl, maxLines: 3),
-
-                /// Service Type
                 Text(
                   "Select Service Type",
                   style: TextStyle(
-                    color: primaryColor,
+                    color: Colors.black,
                     fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -166,9 +162,8 @@ class AddPortfolioDialog extends StatelessWidget {
                 Text(
                   "Images",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
                     fontSize: 13.sp,
-                    color: primaryColor,
+                    color: Colors.black,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -248,7 +243,7 @@ class AddPortfolioDialog extends StatelessWidget {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2, color: Colors.white),
                                 )
-                              : Text("Save Portfolio", style: TextStyle(color: Colors.white)),
+                              : Text("Create", style: TextStyle(color: Colors.white)),
                         )),
                   ],
                 )

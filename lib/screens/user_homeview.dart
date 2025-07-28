@@ -5,13 +5,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/paymentlinkcontroller.dart';
 import 'package:joya_app/controllers/services_controller.dart';
+import 'package:joya_app/controllers/user_controller.dart';
+import 'package:joya_app/controllers/userprofile_controller.dart';
 import 'package:joya_app/models/servides_model.dart';
 import 'package:joya_app/screens/all_vendors_screen.dart';
 import 'package:joya_app/screens/usser_profile_screen.dart';
 import 'package:joya_app/utils/colors.dart';
-import 'package:joya_app/widgets/admin_link_widget.dart';
-import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,14 +26,18 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   String? userCountry;
   String? username;
-
+  String? userRole;
+String? userImageUrl;
   final servicecontroller = Get.put(ServicesController());
   final TextEditingController searchController = TextEditingController();
 final PaymentLinkController controller = Get.put(PaymentLinkController());
+final usercontroller = Get.put(UserProfileController());
   @override
   void initState() {
     super.initState();
+    loadUserImage();
     loadCountry();
+    loadUserRole();
     loadUsername();
     servicecontroller.fetchServices();
     controller.fetchPaymentLinks();
@@ -52,6 +57,27 @@ final PaymentLinkController controller = Get.put(PaymentLinkController());
     }
   }
 
+Future<void> loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('role');
+    if (role != null && role.isNotEmpty) {
+      setState(() {
+        userRole = role;
+      });
+    } else {
+      setState(() {
+        userRole = 'Unknown';
+      });
+    }
+  }
+
+Future<void> loadUserImage() async {
+ var imageUrl = usercontroller.userProfile.value?.image;
+
+  setState(() {
+    userImageUrl = imageUrl;
+  });
+}
   Future<void> loadCountry() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? countries = prefs.getString('country');
@@ -129,26 +155,38 @@ color: Color(0xffE1DBFF),
         children: [
           SizedBox(height: 16.h),
           buildTopBar(),
-          SizedBox(height: 12.h),
-          Padding(
-  padding: EdgeInsets.symmetric(horizontal: 10.w),
+          SizedBox(height: 8.h),
+        Padding(
+  padding: EdgeInsets.symmetric(horizontal: 16.w),
   child: TextField(
     controller: searchController,
     onChanged: (value) => setState(() {}),
     decoration: InputDecoration(
-      hintText: "Search",
+      hintText: "Search".tr,
       hintStyle: TextStyle(
         color: Colors.grey.shade400,
-        fontSize: 14.sp,
+        fontSize: 12.sp,
       ),
-      prefixIcon: SvgPicture.asset("assets/Magnifer.svg", height: 20.h),
+      prefixIcon: Padding(
+        padding: EdgeInsets.all(4.r),
+        child: SvgPicture.asset(
+          "assets/Magnifer.svg",
+          height: 40.h,
+          width: 40.w,
+          fit: BoxFit.contain,
+        ),
+      ),
+      prefixIconConstraints: BoxConstraints(
+        minHeight: 12.h,
+        minWidth: 36.w,
+      ),
       filled: true,
-      fillColor: Colors.transparent, // or backgroungcolor if needed
+      fillColor: Colors.transparent,
       contentPadding: EdgeInsets.symmetric(vertical: 12.h),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.r),
         borderSide: BorderSide(
-          color: Colors.grey.shade300, // light gray border
+          color: Colors.grey.shade300,
           width: 1,
         ),
       ),
@@ -182,32 +220,49 @@ color: Color(0xffE1DBFF),
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 20.r,
-              child: ClipOval(
-                child: Image.asset(
-                  "assets/user.jpg",
-                  fit: BoxFit.cover,
-                  height: 40.h,
-                  width: 40.w,
-                ),
-              ),
-            ),
+            CircleAvatar(
+  backgroundColor: Colors.white,
+  radius: 20.r,
+  child: ClipOval(
+    child: usercontroller.userProfile.value?.image != null
+        ? Image.network(
+            usercontroller.userProfile.value!.image!,
+            fit: BoxFit.cover,
+            height: 40.h,
+            width: 40.w,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                "assets/user.jpg",
+                fit: BoxFit.cover,
+                height: 40.h,
+                width: 40.w,
+              );
+            },
+          )
+        : Image.asset(
+            "assets/user.jpg",
+            fit: BoxFit.cover,
+            height: 40.h,
+            width: 40.w,
+          ),
+  ),
+),
+
             SizedBox(width: 8.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Hi, $username",
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w400),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+               Text(
+  "${'hi'.tr},${username}",
+  style: TextStyle(
+    fontSize: 16.sp,
+    color: primaryColor,
+  ),
+),
                 SizedBox(height: 4.h),
                 Text(
-                  "Elevate Your Business with Joya",
-                  style: TextStyle(fontSize: 8.sp, fontWeight: FontWeight.w300),
+                  "${userRole}",
+                  style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w300),
                 ),
               ],
             ),
@@ -223,6 +278,21 @@ color: Color(0xffE1DBFF),
 final RxInt currentIndex = 0.obs;
 Widget buildAdsSection() {
   return Obx(() {
+    if (servicecontroller.isLoading.value) {
+      return Shimmer.fromColors(
+    baseColor: backgroungcolor,
+    highlightColor: Colors.grey.shade100,
+    child: Container(
+      width: double.infinity,
+      height: 180.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+    ),
+  );
+    }
+
     if (servicecontroller.adsList.isEmpty) {
       return Container(
         height: 180.h,
@@ -245,7 +315,6 @@ Widget buildAdsSection() {
         final ad = servicecontroller.adsList[index];
         return Stack(
           children: [
-            /// Background Image
             Container(
               width: double.infinity,
               margin: EdgeInsets.zero,
@@ -269,9 +338,6 @@ Widget buildAdsSection() {
                 ),
               ),
             ),
-
-          
-
             Positioned(
               bottom: 12.h,
               left: 0,
@@ -311,23 +377,26 @@ Widget buildAdsSection() {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: EdgeInsets.symmetric(horizontal: 18.w),
           child: Text(
             "Services".tr,
             style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w400),
           ),
         ),      
-        SizedBox(height: 12.h),
+        SizedBox(height: 6.h),
 
         Obx(() {
-          if (servicecontroller.servicesList.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.r),
-                child: CircularProgressIndicator(color: primaryColor),
-              ),
-            );
-          }
+         if (servicecontroller.isLoading.value) {
+  return Padding(
+    padding: EdgeInsets.symmetric(horizontal: 16.w),
+    child: ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: 4, 
+      itemBuilder: (context, index) => buildServiceShimmer(),
+    ),
+  );
+}
 
           final filteredServices = servicecontroller.servicesList.where((item) {
             final query = searchController.text.toLowerCase();
@@ -415,13 +484,13 @@ Widget buildAdsSection() {
                     children: [
                       SvgPicture.asset("assets/vendors.svg", height: 20.h),
                                             SizedBox(width: 4.w),
-                      Text(
-                        "${item.vendorCount} vendors",
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey,
-                        ),
-                      ),
+                    Text(
+  "${item.vendorCount} ${'vendors_label'.tr}",
+  style: TextStyle(
+    fontSize: 12.sp,
+    color: Colors.grey,
+  ),
+),
                       Spacer(),
                        SizedBox(
                     width: 90.w,
@@ -468,6 +537,45 @@ Widget buildAdsSection() {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+Widget buildServiceShimmer() {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 8.h),
+    child: Shimmer.fromColors(
+      baseColor: backgroungcolor,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        padding: EdgeInsets.all(12.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 160.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Container(height: 14.h, width: 100.w, color: Colors.white),
+            SizedBox(height: 8.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(height: 12.h, width: 60.w, color: Colors.white),
+                Container(height: 32.h, width: 80.w, color: Colors.white),
+              ],
+            )
           ],
         ),
       ),

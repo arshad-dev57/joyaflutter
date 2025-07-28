@@ -52,7 +52,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: backgroungcolor,
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
@@ -73,34 +73,40 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Center(
-                            child: Text(
-                              isEdit ? "Edit Vendor" : "Add Vendor",
-                              style: TextStyle(
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                                color: primaryColor,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isEdit ? "Edit Vendor".tr : "Add Vendor".tr,
+                                style: TextStyle(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
                               ),
-                            ),
+                              IconButton(
+                                icon: Icon(Icons.close, color: primaryColor, size: 24.sp),
+                                onPressed: () => Get.back(),
+                              ),
+                            ],
                           ),
                           SizedBox(height: 16.h),
 
-                          buildTextField("First Name *", controller.firstNameCtrl, inputType: TextInputType.name),
-                          buildTextField("Last Name", controller.lastNameCtrl, inputType: TextInputType.name),
-                          buildTextField("UserName *", controller.usernameCtrl, inputType: TextInputType.name),
-                          buildTextField("Email *", controller.emailCtrl, inputType: TextInputType.emailAddress),
-                          buildTextField("Phone *", controller.phoneCtrl, inputType: TextInputType.phone),
-                          buildTextField("Code *", controller.codeCtrl, inputType: TextInputType.number),
-                          buildTextField("Payment Link *", controller.paymentlinkCtrl, inputType: TextInputType.url),
-                          buildTextField("Password *", controller.passwordCtrl, inputType: TextInputType.visiblePassword),
+                          buildTextField("First Name ".tr, controller.firstNameCtrl, inputType: TextInputType.name),
+                          buildTextField("Last Name".tr, controller.lastNameCtrl, inputType: TextInputType.name),
+                          buildTextField("UserName ".tr, controller.usernameCtrl, inputType: TextInputType.name),
+                          buildTextField("email_label".tr, controller.emailCtrl, inputType: TextInputType.emailAddress),
+                          buildTextField("phone_label".tr, controller.phoneCtrl, inputType: TextInputType.phone),
+                          buildTextField("Code".tr, controller.codeCtrl, inputType: TextInputType.number),
+                          buildTextField("Payment Link".tr, controller.paymentlinkCtrl, inputType: TextInputType.url),
+                          buildTextField("login_password_label".tr, controller.passwordCtrl, inputType: TextInputType.visiblePassword),
 
                           // Country
                           Text(
-                            "Country *",
+                            "country_label".tr,
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
-                              color: primaryColor,
+                              color: Colors.black,
                             ),
                           ),
                           SizedBox(height: 6.h),
@@ -109,7 +115,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                                 ? null
                                 : controller.countryCtrl.text,
                             decoration: inputDecoration(primaryColor, context),
-                            hint: Text("Select Country", style: TextStyle(fontSize: 12.sp)),
+                            hint: Text("Select Country".tr, style: TextStyle(fontSize: 12.sp)),
                             items: ['Pakistan', 'Saudi Arabia', 'UAE', 'Egypt', 'Qatar']
                                 .map((country) => DropdownMenuItem(
                                       value: country,
@@ -120,7 +126,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                               controller.countryCtrl.text = val!;
                             },
                             validator: (val) {
-                              if (val == null || val.isEmpty) return "Country is required";
+                              if (val == null || val.isEmpty) return "Country is required".tr;
                               return null;
                             },
                           ),
@@ -129,11 +135,10 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           /// Service Categories
                           Text(
-                            "Service Categories ",
+                            "edit_service_category".tr,
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
-                              color: primaryColor,
+                              color: Colors.black,
                             ),
                           ),
                           SizedBox(height: 6.h),
@@ -143,7 +148,8 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                                 height: 50.h,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade300,
+                                  color: primaryColor.withValues(alpha: 0.1),
+                                  border: Border.all(color: primaryColor.withValues(alpha: 0.1)),
                                   borderRadius: BorderRadius.circular(12.r),
                                 ),
                                 child: Center(
@@ -170,7 +176,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                                     ),
                                     selected: isSelected,
                                     selectedColor: primaryColor,
-                                    backgroundColor: Colors.grey.shade100,
+                                    backgroundColor: primaryColor.withValues(alpha: 0.1),
                                     shape: StadiumBorder(
                                       side: BorderSide(
                                         color: isSelected ? primaryColor : Colors.grey.shade300,
@@ -191,13 +197,11 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           SizedBox(height: 12.h),
 
-                          /// Language
                           Text(
-                            "Language *",
+                            "Language".tr,
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
-                              color: primaryColor,
+                              color: Colors.black,
                             ),
                           ),
                           SizedBox(height: 6.h),
@@ -211,13 +215,11 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           SizedBox(height: 12.h),
 
-                          /// Role Dropdown
                           Text(
-                            "Role",
+                            "Role".tr,
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
-                              color: primaryColor,
+                              color: Colors.black,
                             ),
                           ),
                           SizedBox(height: 6.h),
@@ -235,16 +237,15 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           SizedBox(height: 12.h),
 
-                          buildTextField("Description", controller.descriptionCtrl, maxLines: 3),
+                          buildTextField("add_portfolio_desc_label".tr, controller.descriptionCtrl, maxLines: 3),
 
                           SizedBox(height: 12.h),
 
                           Text(
-                            "Image *",
+                            "edit_image".tr,
                             style: TextStyle(
-                              fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
-                              color: primaryColor,
+                              color: Colors.black,
                             ),
                           ),
                           SizedBox(height: 6.h),
@@ -267,7 +268,7 @@ class AddVendorDialog extends GetView<AllVendorsController> {
 
                           SizedBox(height: 16.h),
                           Text(
-                            "Add Social Link",
+                            "Add Social Link".tr,
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13.sp,
@@ -278,17 +279,21 @@ class AddVendorDialog extends GetView<AllVendorsController> {
                         TextField(
   controller: controller.socialNameCtrl,
   decoration: InputDecoration(
-    labelText: "Social Name",
+    labelText: "Social Name".tr,
     labelStyle: TextStyle(color: Colors.grey.shade700, fontSize: 12.sp),
     filled: true,
-    fillColor: Colors.grey.shade100,
+    fillColor: backgroungcolor,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12.r),
-      borderSide: BorderSide(color: Colors.grey.shade300),
+      borderSide: BorderSide(color: primaryColor.withOpacity(0.1)),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12.r),
-      borderSide: BorderSide(color: primaryColor, width: 1.5),
+      borderSide: BorderSide(color: primaryColor.withOpacity(0.1), width: 1),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.r),
+      borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
     ),
     contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
   ),
@@ -300,20 +305,25 @@ TextField(
   controller: controller.socialUrlCtrl,
   keyboardType: TextInputType.url,
   decoration: InputDecoration(
-    labelText: "Social URL",
+    labelText: "Social URL".tr,
     labelStyle: TextStyle(color: Colors.grey.shade700, fontSize: 12.sp),
     filled: true,
-    fillColor: Colors.grey.shade100,
+    fillColor: backgroungcolor,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12.r),
       borderSide: BorderSide(color: Colors.grey.shade300),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12.r),
-      borderSide: BorderSide(color: primaryColor, width: 1.5),
+      borderSide: BorderSide(color: primaryColor.withOpacity(0.1), width: 1.5),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.r),
+      borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
     ),
     contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
   ),
+
 ),
 SizedBox(height: 8.h),
                                GestureDetector(
@@ -322,9 +332,9 @@ SizedBox(height: 8.h),
           height: 120.h,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: backgroungcolor,
             borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: Colors.grey),
+            border: Border.all(color: primaryColor.withOpacity(0.5)),
           ),
           alignment: Alignment.center,
           child: controller.socialImageFile.value != null
@@ -337,7 +347,7 @@ SizedBox(height: 8.h),
                       File(controller.socialImageFile.value!.path),
                       fit: BoxFit.cover,
                     ))
-              : Text("Tap to select social icon"),
+              : Text("Tap to select social icon".tr),
         ),
       ),
 
@@ -345,36 +355,20 @@ SizedBox(height: 8.h),
 
 
 
-                          SizedBox(height: 16.h),
+                          SizedBox(height: 6.h),
 
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: controller.addSocialLink,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 12.h),
-                              ),
-                              child: Text(
-                                "Add Social Link",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.sp,
-                                ),
-                              ),
-                            ),
-                          ),
-
+                          
+Align(
+  alignment: Alignment.centerRight,
+  child: TextButton(                              onPressed: controller.addSocialLink,
+ child: Text("Add Social Link".tr, style: TextStyle(color: primaryColor, fontSize: 13.sp),)),
+),
                           SizedBox(height: 16.h),
 
                           Obx(() {
                             if (controller.urlLinks.isEmpty) {
                               return Text(
-                                "No social links added yet.",
+                                "No social links added yet.".tr,
                                 style: TextStyle(color: Colors.grey, fontSize: 12.sp),
                               );
                             } else {
@@ -397,7 +391,7 @@ SizedBox(height: 8.h),
                 ),
 
                 Obx(() => Padding(
-                      padding: EdgeInsets.all(16.w),
+                      padding: EdgeInsets.all(12.w),
                       child: SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -427,7 +421,7 @@ SizedBox(height: 8.h),
                                   ),
                                 )
                               : Text(
-                                  isEdit ? "Update Vendor" : "Submit",
+                                  isEdit ? "Update Vendor".tr : "Submit".tr,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -466,7 +460,7 @@ SizedBox(height: 8.h),
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade700, fontSize: 12.sp),
           filled: true,
-          fillColor: Colors.grey.shade100,
+          fillColor: backgroungcolor,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide(color: Colors.grey.shade300),
@@ -600,7 +594,7 @@ SizedBox(height: 8.h),
   InputDecoration inputDecoration(Color primaryColor, BuildContext context) =>
       InputDecoration(
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: backgroungcolor,
         hintStyle: TextStyle(
           color: Colors.grey.shade500,
           fontSize: 12.sp,

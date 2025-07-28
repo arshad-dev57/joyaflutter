@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:joya_app/controllers/services_controller.dart';
 import 'package:joya_app/utils/colors.dart';
-import '../models/ad_model.dart';
 
 class adminaddscreen extends StatelessWidget {
   final TextEditingController searchController = TextEditingController();
@@ -20,132 +20,137 @@ class adminaddscreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: Text(
-          "Ads Management",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: primaryColor,
-        leading: Padding(
-          padding: EdgeInsets.all(8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () {
-                Get.back();
-              },
-            ),
-          ),
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
+    
+      body: SafeArea(
         child: Column(
           children: [
-            /// Search & Create Ad button
-            Row(
-              children: [
-                Expanded(
-                  child: Material(
-                    elevation: 3,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      height: 40.h,
-                      child: TextField(
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          hintText: "Search ads...",
-                          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 12.sp),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey.shade600, size: 22.sp),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: EdgeInsets.symmetric(),
-                        ),
-                      ),
+            SizedBox(height: 12.h),
+                 Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              child: Row(
+                children: [
+                  InkWell(onTap: () {
+                    Get.back();
+                  }, child: SvgPicture.asset("assets/Arrow.svg", height: 32.h)),
+                  SizedBox(width: 12.w),
+                  Text(
+                    "Adds".tr,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
                     ),
                   ),
-                ),
-                SizedBox(width: 12),
-                InkWell(
-                  onTap: () {
-                    showCreateAdDialog(context);
-                  },
-                  child: Container(
-                    height: 40.h,
-                                          width: 80.w,
-
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add, size: 20, color: Colors.white),
-                      Text("Create Ad", style: TextStyle(color: Colors.white,fontSize: 8.sp)),
-                      ],
-                    )
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "All Ads:",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: primaryColor,
-                ),
+                ],
               ),
             ),
-            SizedBox(height: 16),
-
-        Expanded(
-  child: Obx(() {
-    final ads = serviceController.adsList;
-
-    if (ads.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.image_not_supported, size: 60, color: Colors.grey.shade400),
-            SizedBox(height: 12),
-            Text(
-              "No ads available.",
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+            SizedBox(height: 12.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+    //               Expanded(
+    //                 child: Container(
+    //                   height: 40.h,
+    //                   child: TextField(
+    //                     controller: searchController,
+    //                     decoration:InputDecoration(
+    //   hintText: "Search",
+    //   hintStyle: TextStyle(
+    //     color: Colors.grey.shade400,
+    //     fontSize: 14.sp,
+    //   ),
+    //   prefixIcon: SvgPicture.asset("assets/Magnifer.svg", height: 12.h),
+    //   filled: true,
+    //   fillColor: Colors.transparent, // or backgroungcolor if needed
+    //   contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+    //   enabledBorder: OutlineInputBorder(
+    //     borderRadius: BorderRadius.circular(8.r),
+    //     borderSide: BorderSide(
+    //       color: Colors.grey.shade300, // light gray border
+    //       width: 1,
+    //     ),
+    //   ),
+    //   focusedBorder: OutlineInputBorder(
+    //     borderRadius: BorderRadius.circular(12.r),
+    //     borderSide: BorderSide(
+    //       color: Colors.grey.shade400,
+    //       width: 1,
+    //     ),
+    //   ),
+    // ),
+    //                   ),
+    //                 ),
+    //               ),
+                  SizedBox(width: 6.w),
+                  InkWell(
+                    onTap: () {
+                      showCreateAdDialog(context);
+                    },
+                    child: Container(
+                      height: 40.h,
+                                            width: 70.w,
+                  
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                         Text(
+                      "Create".tr,
+                      style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 12.sp,
+              
+                      ),
+                    ),
+                     Icon(Icons.add, size: 12.sp, color: Colors.white),
+                        ],
+                      )
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          
+            SizedBox(height: 12.h),
+                
+        Expanded(
+        child: Obx(() {
+          final ads = serviceController.adsList;
+                
+          if (ads.isEmpty) {
+                return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.image_not_supported, size: 60, color: Colors.grey.shade400),
+              SizedBox(height: 12),
+              Text(
+                "No ads available.",
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+              ),
+            ],
+          ),
         ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: ads.length,
-      itemBuilder: (context, index) {
+                );
+          }
+                
+          return ListView.builder(
+                itemCount: ads.length,
+                itemBuilder: (context, index) {
         final ad = ads[index];
-
+                
         return Container(
           margin: EdgeInsets.only(bottom: 16),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            // color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -172,9 +177,7 @@ class adminaddscreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Gradient Overlay at bottom
-                Positioned(
+                                Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
@@ -189,8 +192,7 @@ class adminaddscreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Username text at bottom-left
+                
                 Positioned(
                   left: 16,
                   bottom: 12,
@@ -206,33 +208,75 @@ class adminaddscreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                
+Positioned(
+  top: 8,
+  right: 8,
+  child: Container(
+    height: 32,
+    width: 32,
+    decoration: BoxDecoration(
+      color: primaryColor.withOpacity(0.2),
+      shape: BoxShape.circle,
+    ),
+    child: PopupMenuButton<int>(
+      icon: Icon(Icons.more_vert, color: primaryColor, size: 18),
+      color: Colors.red.shade50,
+      offset: Offset(0, 30),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem<int>(
+          value: 1,
+          padding: EdgeInsets.zero,
+          height: 26, 
 
-                // Delete button at top-right
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
-                      onPressed: () {
-                        serviceController.deleteAd(ad.id);
-                      },
-                    ),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.delete, color: Colors.red, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  "Delete",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 8.sp,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-        );
+        ),
+      ],
+      onSelected: (value) {
+        if (value == 1) {
+          serviceController.deleteAd(ad.id);
+        }
       },
-    );
-  }),
-),
+      constraints: BoxConstraints(
+        minWidth: 50.w,
+        maxWidth: 70.w,
+      ),
+    ),
+  ),
+)
 
+
+
+              ],
+            ),
+          ),
+        );
+                },
+          );
+        }),
+                ),
+                
           ],
         ),
       ),
@@ -251,7 +295,7 @@ class adminaddscreen extends StatelessWidget {
             return AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               title: Text(
-                "Create Ad",
+                "Create Ad".tr,
                 style: TextStyle(
                   color: primaryColor,
                   fontWeight: FontWeight.bold,
@@ -288,7 +332,7 @@ class adminaddscreen extends StatelessWidget {
                                     Icon(Icons.cloud_upload, size: 40, color: primaryColor),
                                     SizedBox(height: 10),
                                     Text(
-                                      "Tap to select image",
+                                      "Tap to select image".tr,
                                       style: TextStyle(
                                         color: primaryColor,
                                         fontWeight: FontWeight.w600,
@@ -329,7 +373,7 @@ class adminaddscreen extends StatelessWidget {
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text(
-                    "Cancel",
+                    "Cancel".tr,
                     style: TextStyle(color: primaryColor),
                   ),
                 ),
@@ -368,7 +412,7 @@ class adminaddscreen extends StatelessWidget {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : Text(
-                            "Create",
+                            "Create".tr,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,

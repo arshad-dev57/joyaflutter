@@ -4,9 +4,9 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:joya_app/controllers/language_controller.dart';
+import 'package:joya_app/screens/disclaimer_screen.dart';
 import 'package:joya_app/splash_view.dart';
 import 'package:joya_app/utils/app_translation.dart';
-
 void main() {
   runApp(MyApp());
 }

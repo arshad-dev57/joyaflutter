@@ -8,12 +8,9 @@ import 'package:joya_app/screens/portfolio_detail_screen.dart';
 import 'package:joya_app/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 class VendorDetailScreen extends StatefulWidget {
   final VendorModel vendor;
-
   const VendorDetailScreen({super.key, required this.vendor});
-
   @override
   State<VendorDetailScreen> createState() => _VendorDetailScreenState();
 }
@@ -47,351 +44,341 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 18.h),
-              InkWell(onTap: () => Get.back(), child: SvgPicture.asset("assets/Arrow.svg", height: 32.h)),
-              SizedBox(height: 12.h),
-              vendor.image != null && vendor.image!.isNotEmpty
-              ? ClipRRect(
-                borderRadius: BorderRadius.circular(10.r),
-                child: SizedBox(
-                    height: 230.h,
-                    width: double.infinity,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          vendor.image!,
-                          fit: BoxFit.cover,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withOpacity(0.4),
-                                Colors.transparent,
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 18.h),
+                InkWell(onTap: () => Get.back(), child: SvgPicture.asset("assets/Arrow.svg", height: 42.h)),
+                SizedBox(height: 12.h),
+                vendor.image != null && vendor.image!.isNotEmpty
+                ? ClipRRect(
+                  borderRadius: BorderRadius.circular(10.r),
+                  child: SizedBox(
+                      height: 230.h,
+                      width: double.infinity,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.network(
+                            vendor.image!,
+                            fit: BoxFit.cover,
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.black.withOpacity(0.4),
+                                  Colors.transparent,
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                )
+                : Container(
+                    height: 320.h,
+                    width: double.infinity,
+                    color: Colors.grey.shade300,
+                    child: Icon(Icons.person, size: 60.sp, color: Colors.grey),
                   ),
-              )
-              : Container(
-                  height: 320.h,
-                  width: double.infinity,
-                  color: Colors.grey.shade300,
-                  child: Icon(Icons.person, size: 60.sp, color: Colors.grey),
-                ),
-              SizedBox(height: 10.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "${vendor.firstname ?? ''} ${vendor.lastname ?? ''}",
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w500,
-                      color: primaryColor,
+                SizedBox(height: 10.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${vendor.firstname ?? ''} ${vendor.lastname ?? ''}",
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w500,
+                        color: primaryColor,
+                      ),
                     ),
-                  ),
-                   Row(
-                children: [
-                  ...List.generate(
-                    2,
-                    (_) => Icon(
-                      Icons.star_rounded,
+                     Row(
+                  children: [
+                    ...List.generate(
+                      2,
+                      (_) => Icon(
+                        Icons.star_rounded,
+                        color: Colors.amber,
+                        size: 20.sp,
+                      ),
+                    ),
+                    Icon(
+                      Icons.star_half_rounded,
                       color: Colors.amber,
                       size: 20.sp,
                     ),
-                  ),
-                  Icon(
-                    Icons.star_half_rounded,
-                    color: Colors.amber,
-                    size: 20.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    "4.5",
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
+                    SizedBox(width: 8.w),
+                    Text(
+                      "4.5",
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
+                  ],
+                ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+              
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: infoRow("assets/phone.svg", vendor.phoneNumber ?? "")),
+                    Expanded(child: infoRow("assets/newlocation.svg", vendor.country ?? "")),
+                    Expanded(child: infoRow("assets/newmail.svg", vendor.email ?? "")),
+                  
+                  ],
+                ),
+               
+                SizedBox(height: 8.h),
+                  Text(vendor.description ?? "", style: TextStyle(fontSize: 12.sp,color: Colors.grey.shade600),),
+                SizedBox(height: 8.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    sectionTitle("vendor_portfolio".tr),
+                    if (vendorId == currentUserId &&
+                        currentUserRole == "vendor")
+                     ElevatedButton.icon(
+                onPressed: () {
+                  showPortfolioPicker(context, vendor.id);
+                },
+                icon: Icon(Icons.link, size: 12.sp, color: Colors.white),
+                label: Text(
+                  "Link Portfolio".tr,
+                  style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 8.sp,
+            color: Colors.white,
                   ),
-                ],
-              ),
-                ],
-              ),
-              SizedBox(height: 8.h),
-            
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(child: infoRow("assets/Hang Up.svg", vendor.phoneNumber ?? "")),
-                  Expanded(child: infoRow("assets/location.svg", vendor.country ?? "")),
-                  Expanded(child: infoRow("assets/letter.svg", vendor.email ?? "")),
-                
-                ],
-              ),
-              // SizedBox(height: 20.h),
-                
-              // sectionTitle("vendor_services".tr),
-              // SizedBox(height: 8.h),
-              // Wrap(
-              //   spacing: 8.w,
-              //   runSpacing: 8.h,
-              //   children: List.generate(
-              //     (vendor.services ?? []).length,
-              //     (index) {
-              //       final service = vendor.services![index];
-              //       final List<Color> chipColors = [
-              //         Colors.blueAccent.withOpacity(0.15),
-              //         Colors.redAccent.withOpacity(0.15),
-              //         Colors.greenAccent.withOpacity(0.2),
-              //       ];
-              //       final backgroundColor =
-              //           chipColors[index % chipColors.length];
-                
-              //       return Chip(
-              //         backgroundColor: backgroundColor,
-              //         label: Text(
-              //           service,
-              //           style: TextStyle(
-              //             color: Colors.black87,
-              //             fontWeight: FontWeight.bold,
-              //             fontSize: 12.sp,
-              //           ),
-              //         ),
-              //       );
-              //     },
-              //   ),
-              // ),
-              SizedBox(height: 8.h),
-                
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  sectionTitle("vendor_portfolio".tr),
-                  if (vendorId == currentUserId &&
-                      currentUserRole == "vendor")
-                   ElevatedButton.icon(
-              onPressed: () {
-                showPortfolioPicker(context, vendor.id);
-              },
-              icon: Icon(Icons.link, size: 12.sp, color: Colors.white),
-              label: Text(
-                "Link Portfolio".tr,
-                style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 8.sp,
-          color: Colors.white,
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  elevation: 4,
                 ),
-                elevation: 4,
-              ),
+                  ),
+                  
+                  ],
                 ),
-                
-                ],
-              ),
-              SizedBox(height: 12.h),
-                
-              Obx(() {
-                if (controller.loadingLinkedPortfolios.value) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                if (controller.linkedPortfolios.isEmpty) {
-                  return Text(
-                    "No portfolios linked yet.",
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.grey,
-                    ),
-                  );
-                }
-                
-                return SizedBox(
-                  height: 160.h,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: controller.linkedPortfolios.length,
-                    padding: EdgeInsets.only(left: 4.w),
-                    itemBuilder: (context, index) {
-                      final p =
-                          controller.linkedPortfolios[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Get.to(PortfolioDetailScreen(portfolio: p));
-                        },
-                        child: Container(
-                          width: 320.w,
-                          margin: EdgeInsets.only(right: 14.w),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withOpacity(0.08),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(12.r),
-                            child: Stack(
-                              children: [
-                                p.images != null &&
-                                        p.images.isNotEmpty
-                                    ? Image.network(
-                                        p.images[0],
-                                        width: 320.w,
-                                        height: 160.h,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Container(
-                                        width: 330.w,
-                                        height: 180.h,
-                                        color: Colors
-                                            .grey.shade200,
-                                        child: Icon(
-                                          Icons.image,
-                                          size: 32.sp,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                Container(
-                                  height: 160.h,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.black
-                                            .withValues(alpha: 0.6),
-                                        Colors.transparent,
-                                      ],
-                                      begin:
-                                          Alignment.bottomCenter,
-                                      end: Alignment.topCenter,
-                                    ),
-                                  ),
+                SizedBox(height: 12.h),
+                  
+                Obx(() {
+                  if (controller.loadingLinkedPortfolios.value) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (controller.linkedPortfolios.isEmpty) {
+                    return Text(
+                      "No portfolios linked yet.",
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey,
+                      ),
+                    );
+                  }
+                  
+                  return SizedBox(
+                    height: 160.h,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: controller.linkedPortfolios.length,
+                      padding: EdgeInsets.only(left: 4.w),
+                      itemBuilder: (context, index) {
+                        final p =
+                            controller.linkedPortfolios[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Get.to(PortfolioDetailScreen(portfolio: p));
+                          },
+                          child: Container(
+                            width: 320.w,
+                            margin: EdgeInsets.only(right: 14.w),
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(12.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black
+                                      .withOpacity(0.08),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
                                 ),
-                                Positioned(
-              top: 12.h,
-              left: 12.w,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-                decoration: BoxDecoration(
-          color: primaryColor,
-          borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-          p.title ?? "Untitled",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 8.sp,
-          ),
-                ),
-              ),
-                ),
-                Positioned(
-              bottom: 12.h,
-              right: 12.w,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-                decoration: BoxDecoration(
-          border: Border.all(color: primaryColor),
-          borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-          "View more".tr,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 8.sp,
-          ),
-                ),
-              ),
-                ),
                               ],
                             ),
-                          ),
-                        ),
-                      );
-                    },
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(12.r),
+                              child: Stack(
+                                children: [
+                                  p.images != null &&
+                                          p.images.isNotEmpty
+                                      ? Image.network(
+                                          p.images[0],
+                                          width: 320.w,
+                                          height: 160.h,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(
+                                          width: 330.w,
+                                          height: 180.h,
+                                          color: Colors
+                                              .grey.shade200,
+                                          child: Icon(
+                                            Icons.image,
+                                            size: 32.sp,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                  Container(
+                                    height: 160.h,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.black
+                                              .withValues(alpha: 0.6),
+                                          Colors.transparent,
+                                        ],
+                                        begin:
+                                            Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                top: 12.h,
+                left: 12.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+            color: primaryColor,
+            borderRadius: BorderRadius.circular(6.r),
                   ),
-                );
-              }),
-              SizedBox(height: 20.h),
-                
-              sectionTitle("vendor_ratings_reviews".tr),
-              SizedBox(height: 10.h),
-              Obx(() {
-                if (controller.reviewList.isEmpty) {
-                  return Text(
-                    "No reviews yet.".tr,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.grey,
+                  child: Text(
+            p.title ?? "Untitled",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 8.sp,
+            ),
+                  ),
+                ),
+                  ),
+                  Positioned(
+                bottom: 12.h,
+                right: 12.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+            border: Border.all(color: primaryColor),
+            borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+            "View more".tr,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 8.sp,
+            ),
+                  ),
+                ),
+                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
-                }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: controller.reviewList.length,
-                  itemBuilder: (context, index) {
-                    final review =
-                        controller.reviewList[index];
-                    return buildReviewTile(
-                      review.user.email,
-                      review.rating,
-                      review.comment,
+                }),
+                SizedBox(height: 20.h),
+                  
+                sectionTitle("vendor_ratings_reviews".tr),
+                SizedBox(height: 10.h),
+                Obx(() {
+                  if (controller.reviewList.isEmpty) {
+                    return Text(
+                      "No reviews yet.".tr,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey,
+                      ),
                     );
-                  },
-                );
-              }),
-              buildAddReviewSection(vendor),
-              SizedBox(height: 20.h),
-                
-              sectionTitle("vendor_social_links".tr),
-              SizedBox(height:6.h),
-              SizedBox(
-              height: 50.h,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: vendor.urls
-            .map((link) => buildSocialLink(link))
-            .toList(),
-              ),
+                  }
+                  return Container(
+                    height: 200.h,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: controller.reviewList.length,
+                      itemBuilder: (context, index) {
+                        final review =
+                            controller.reviewList[index];
+                        return buildReviewTile(
+                          review.user.firstname,
+                          review.rating.toDouble(),
+                          review.comment,
+                        );
+                      },
+                    ),
+                  );
+                }),
+                buildAddReviewSection(vendor),
+                SizedBox(height: 20.h),
+                  
+                sectionTitle("vendor_social_links".tr),
+                SizedBox(height:6.h),
+                SizedBox(
+                height: 50.h,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: vendor.urls
+              .map((link) => buildSocialLink(link))
+              .toList(),
                 ),
-                
-              SizedBox(height: 20.h),
-            ],
+                  ),
+                  
+                SizedBox(height: 12.h),
+                sectionTitle("Payment Link".tr),
+                InkWell(
+                  onTap: () async {
+  String url = vendor.paymentlink!.trim();
+  if (!url.startsWith("http")) {
+    url = "https://" + url;
+  }
+
+  final Uri uri = Uri.parse(url);
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } else {
+    Get.snackbar("Error", "Could not launch $url");
+  }
+},
+                  child: Image.asset("assets/payicon.png", width: 30.w, height: 30.h,)),
+                  SizedBox(height: 12.h),
+
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
  Widget infoRow(String icon, String text) {
   return Padding(
     padding: EdgeInsets.only(bottom: 10.h),
@@ -399,7 +386,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
       children: [
         SvgPicture.asset(icon, width: 18.sp, height: 18.sp, colorFilter: ColorFilter.mode(primaryColor.withValues(alpha: 0.8), BlendMode.srcIn)),
         SizedBox(width: 8.w),
-        Flexible( // <- this is safer
+        Flexible( 
           child: Text(
             text,
             style: TextStyle(
@@ -416,8 +403,6 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
     ),
   );
 }
-
-
   Widget sectionTitle(String title) {
     return Text(
       title,
@@ -428,73 +413,67 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
     );
   }
 
- Widget buildReviewTile(String name, int stars, String comment) {
+Widget buildReviewTile(String name, double rating, String comment) {
   return Container(
     margin: EdgeInsets.symmetric(vertical: 10.h),
     padding: EdgeInsets.all(14.r),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Color(0xFFF3EDFF), // light purple background
       borderRadius: BorderRadius.circular(16.r),
-      border: Border.all(color: Colors.grey.shade200, width: 1.2),
+      border: Border.all(color: Color(0xFFB799FF), width: 1), // subtle purple border
     ),
-    child: Row(
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          backgroundImage: NetworkImage(
-            "https://i.pravatar.cc/150?img=${name.hashCode % 70}",
-          ),
-          radius: 24.r,
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Name + Stars Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
                     style: TextStyle(
+                      fontWeight: FontWeight.bold,
                       fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
                   ),
-                  Row(
-                    children: List.generate(
-                      5,
-                      (index) => Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 1.w),
-                        child: Icon(
-                          index < stars
-                              ? Icons.star_rounded
-                              : Icons.star_border_rounded,
-                          color: index < stars
-                              ? Colors.amber
-                              : Colors.grey.shade300,
-                          size: 16.sp,
-                        ),
-                      ),
-                    ),
-                  ),
+                  SizedBox(height: 2.h),
+                 
                 ],
               ),
+            ),
 
-              SizedBox(height: 8.h),
-
-              // Comment
-              Text(
-                comment,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey.shade800,
-                  height: 1.4,
+            // Rating
+            Row(
+              children: [
+                Text(
+                  rating.toStringAsFixed(1),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13.sp,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(width: 4.w),
+                Icon(Icons.star, color: Colors.amber, size: 18.sp),
+              ],
+            ),
+          ],
+        ),
+
+        SizedBox(height: 12.h),
+
+        // Comment
+        Text(
+          comment,
+          style: TextStyle(
+            fontSize: 12.5.sp,
+            color: Colors.grey.shade700,
           ),
         ),
       ],
@@ -516,27 +495,30 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
           children: [
             sectionTitle("vendor_add_review_title".tr),
             SizedBox(width: 10.w),
- Obx(
+Obx(
   () => Row(
+    mainAxisSize: MainAxisSize.min,
     children: List.generate(
       5,
-      (index) => IconButton(
-        padding: EdgeInsets.zero,
-        constraints: BoxConstraints(),
-        icon: Icon(
-          index < selectedStars.value
-              ? Icons.star_rounded
-              : Icons.star_border_rounded,
-          color: Colors.amber,
-          size: 16.sp,
-        ),
-        onPressed: () {
+      (index) => GestureDetector(
+        onTap: () {
           selectedStars.value = index + 1;
         },
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 2.w), 
+          child: Icon(
+            index < selectedStars.value
+                ? Icons.star_rounded
+                : Icons.star_border_rounded,
+            color: Colors.amber,
+            size: 16.sp,
+          ),
+        ),
       ),
     ),
   ),
 ),
+
 
           ],
         ),
@@ -560,7 +542,7 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
             alignment: Alignment.centerRight,
             child: SizedBox(
               width: 100.w,
-              height: 30.h,
+              height: 40.h,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
@@ -589,8 +571,8 @@ class _VendorDetailScreenState extends State<VendorDetailScreen> {
                         "vendor_add_review_submit".tr,
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.sp,
+                          // fontWeight: FontWeight.bold,
+                          fontSize: 12.sp,
                         ),
                       ),
               ),
@@ -616,8 +598,8 @@ Widget buildSocialLink(SocialLink link) {
     child: Padding(
       padding: EdgeInsets.only(right: 8.w),
       child: CircleAvatar(
-        radius: 20.r,
-        backgroundColor: Colors.grey.shade200,
+        radius: 16.r,
+        backgroundColor: backgroungcolor,
         backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
         child: imageUrl.isEmpty
             ? Icon(Icons.public, color: primaryColor, size: 18.sp)

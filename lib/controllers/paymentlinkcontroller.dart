@@ -19,6 +19,7 @@ onInit() {
   fetchPaymentLinks();
   super.onInit();
 }
+  var isLoading = false.obs;
 
 
  Future<void> createpayment({
@@ -97,4 +98,33 @@ Future<void> fetchPaymentLinks() async {
         backgroundColor: Colors.red, colorText: Colors.white);
   }
 }
+
+ Future<void> deletePaymentLink(String id) async {
+    try {
+      isLoading.value = true;
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/payment/delete/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("Deleted successfully");
+        final json = jsonDecode(response.body);
+        Get.snackbar("Success", json['message'] ?? "Deleted successfully");
+        fetchPaymentLinks();
+      } else {
+        print("Failed to delete");
+        final json = jsonDecode(response.body);
+        Get.snackbar("Error", json['message'] ?? "Failed to delete");
+      }
+    } catch (e) {
+      print("Error deleting payment link: $e");
+      Get.snackbar("Error", "Something went wrong: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

@@ -122,7 +122,6 @@ class ServicesController extends GetxController {
     }
   }
 
-  /// ✅ Fetch service names & set default single selection
   Future<void> fetchServiceNames() async {
     try {
       var url = Uri.parse('$baseUrl/services/getservices');
@@ -189,6 +188,7 @@ class ServicesController extends GetxController {
       isLoading.value = false;
     }
   }
+  
   Future<void> createAd({
     required Uint8List? webImageBytes,
     required File? mobileImageFile,

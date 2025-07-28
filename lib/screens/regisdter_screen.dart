@@ -6,13 +6,10 @@ import 'package:joya_app/controllers/language_controller.dart';
 import 'package:joya_app/controllers/register_controller.dart';
 import 'package:joya_app/screens/login_screnn.dart';
 import 'package:joya_app/utils/colors.dart';
-
 class RegisterScreen extends StatelessWidget {
   final RegisterController controller = Get.put(RegisterController());
   final _formKey = GlobalKey<FormState>();
-
   RegisterScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,7 +104,7 @@ class RegisterScreen extends StatelessWidget {
         ],
       ),
     ),
-    SizedBox(width: 12.w), // spacing between first and last name
+    SizedBox(width: 12.w),
 
     /// Last Name
     Expanded(
@@ -270,19 +267,29 @@ SizedBox(height: 14.h),
             obscureText: !controller.isPasswordVisible.value,
             decoration: inputDecoration(primaryColor, context).copyWith(
               hintText: 'login_password_hint'.tr,
-              suffixIcon: IconButton(
-                icon: SvgPicture.asset(
-                  controller.isPasswordVisible.value
-                      ? 'assets/eye.svg'
-                      : 'assets/eye.svg',
-                  width: 12.sp,
-                  height: 12.sp,
-                ),
-                onPressed: () {
-                  controller.isPasswordVisible.value =
-                      !controller.isPasswordVisible.value;
-                },
-              ),
+             suffixIcon: IconButton(
+  onPressed: () {
+    controller.isPasswordVisible.value = !controller.isPasswordVisible.value;
+  },
+  constraints: BoxConstraints(
+    minWidth: 36.w,
+    minHeight: 36.h,
+  ),
+  padding: EdgeInsets.all(8.r),
+  icon: SizedBox(
+    width: 20.w,
+    height: 20.h,
+    child: SvgPicture.asset(
+      controller.isPasswordVisible.value
+          ? 'assets/openeye.svg'
+          : 'assets/eye.svg',
+      fit: BoxFit.contain,
+    ),
+  ),
+),
+
+               
+              
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {

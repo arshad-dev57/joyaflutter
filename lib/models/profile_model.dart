@@ -3,6 +3,7 @@ class UserProfileModel {
   final String email;
   final String role;
   final String? phone;
+  final String? image;
   final String paymentstatus;
 
   UserProfileModel({
@@ -11,6 +12,7 @@ class UserProfileModel {
     required this.email,
     required this.role,
     this.phone,
+    this.image,
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class UserProfileModel {
       email: json['email'] ?? '',
       role: json['role'] ?? '',
       phone: json['phone'],
+      image: json['image'],
     );
   }
 }

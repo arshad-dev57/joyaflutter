@@ -26,20 +26,19 @@ class ReviewModel {
     );
   }
 }
-
 class User {
   final String id;
-  final String email;
+  final String firstname;
 
   User({
     required this.id,
-    required this.email,
+    required this.firstname,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json["_id"],
-      email: json["firstname"],
+      id: json["_id"] ?? '',
+      firstname: json["firstname"] ?? '',
     );
   }
 }

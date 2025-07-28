@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:joya_app/controllers/po4rtfolio_controller.dart';
 import 'package:joya_app/controllers/services_controller.dart';
@@ -43,14 +44,14 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: backgroungcolor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: backgroungcolor,
         centerTitle: true,
         title: Text(
-          "Vendor Portfolios",
+          "Vendor Portfolios".tr,
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w700,
@@ -61,20 +62,48 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
       body: Column(
         children: [
           SizedBox(height: 12.h),
-
-          /// Search and Add
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     height: 40.h,
                     child: TextFormField(
-                      decoration: inputDecoration(primaryColor, context).copyWith(
-                        hintText: 'Search Portfolios',
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20.sp),
-                      ),
+                        decoration: InputDecoration(
+      hintText: "Search".tr,
+      hintStyle: TextStyle(
+        color: Colors.grey.shade400,
+        fontSize: 12.sp,
+      ),
+      prefixIcon: SvgPicture.asset(
+        "assets/Magnifer.svg",
+        height: 40.h,
+        width: 40.w,
+        fit: BoxFit.contain,
+      ),
+      prefixIconConstraints: BoxConstraints(
+        minHeight: 12.h,
+        minWidth: 36.w,
+      ),
+      filled: true,
+      fillColor: Colors.transparent,
+      contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8.r),
+        borderSide: BorderSide(
+          color: Colors.grey.shade300,
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        borderSide: BorderSide(
+          color: Colors.grey.shade400,
+          width: 1,
+        ),
+      ),
+    ),
                     ),
                   ),
                 ),
@@ -84,22 +113,22 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
                     Get.dialog(AddPortfolioDialog());
                   },
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    height: 40.h,
+                    width: 70.w,
+                    // padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [primaryColor.withOpacity(0.7), primaryColor],
-                      ),
+                        color: primaryColor,
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add, size: 18.sp, color: Colors.white),
                         SizedBox(width: 4.w),
                         Text(
-                          "Add",
+                          "Add Work +".tr,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 14.sp,
+                            fontSize: 8.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -111,51 +140,57 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
             ),
           ),
 
-          SizedBox(height: 16.h),
-
-          /// Dropdown
-          Obx(() {
+          SizedBox(height: 12.h),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.0.w),
+          child: Obx(() {
             return Container(
-              height: 40.h,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: DropdownButtonFormField<String>(
-                  decoration: inputDecoration(primaryColor, context).copyWith(
-                    hintText: "Select Service",
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  value: servicesController.selectedServiceName.value.isEmpty
-                      ? null
-                      : servicesController.selectedServiceName.value,
-                  items: servicesController.serviceNames
-                      .map(
-                        (s) => DropdownMenuItem<String>(
-                          value: s,
-                          child: Text(s, style: TextStyle(fontSize: 12.sp)
-                          ),
-                        ),
-                      )
-                      .toList(),
-                onChanged: (val) {
-                servicesController.selectedServiceName.value = val ?? '';
-              
-                if (val != null && val.isNotEmpty) {
-                  portfolioController.getPortfolios(val);
-                } else {
-                  // Clear the list when empty selected
-                  portfolioController.portfolioList.clear();
-                }
-              }
-              
+              height: 44.h,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: Colors.grey.shade300, width: 1),
+                color: backgroungcolor, // soft pastel background
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+          isExpanded: true,
+          icon: SvgPicture.asset("assets/down.svg", height: 10.h, width: 10.w, colorFilter: ColorFilter.mode(Colors.grey, BlendMode.srcIn)),
+          dropdownColor: backgroungcolor,
+          hint: Text(
+            "Category",
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: Colors.grey.shade200,
+            ),
+          ),
+          value: servicesController.selectedServiceName.value.isEmpty
+              ? null
+              : servicesController.selectedServiceName.value,
+          items: servicesController.serviceNames.map((s) {
+            return DropdownMenuItem<String>(
+              value: s,
+              child: Text(
+                s,
+                style: TextStyle(fontSize: 12.sp),
+              ),
+            );
+          }).toList(),
+          onChanged: (val) {
+            servicesController.selectedServiceName.value = val ?? '';
+            if (val != null && val.isNotEmpty) {
+              portfolioController.getPortfolios(val);
+            } else {
+              portfolioController.portfolioList.clear();
+            }
+          },
                 ),
               ),
             );
           }),
+        ),
+          SizedBox(height: 12.h),
 
-          SizedBox(height: 16.h),
-
-          /// List/Grid
           Expanded(
             child: Obx(() {
               if (portfolioController.portfolioloading.value) {
@@ -195,170 +230,116 @@ class _VendorPortfolioScreenState extends State<VendorPortfolioScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 20.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
+        color: backgroungcolor,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12.r),      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// Image Carousel with overlay gradient
           if (item.images.isNotEmpty)
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-              child: Stack(
-                children: [
-                  Image.network(
-                    item.images.first,
-                    height: 180.h,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                  Container(
-                    height: 180.h,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withOpacity(0.4),
-                          Colors.transparent
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12.h,
-                    left: 12.w,
-                    right: 12.w,
-                    child: Text(
-                      item.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.7),
-                            blurRadius: 6,
-                          )
-                        ],
-                      ),
-                    ),
-                  )
-                ],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12.r),
+                topRight: Radius.circular(12.r),
+                bottomLeft: Radius.circular(12.r),
+                bottomRight: Radius.circular(12.r),
+              ),
+              child: Image.network(
+                item.images.first,
+                height: 210.h,
+                width: double.infinity,
+                fit: BoxFit.cover,
               ),
             ),
-
+          SizedBox(height:8.h),
           Padding(
-            padding: EdgeInsets.all(16.r),
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Description
+                  if (item.services.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
+                    children: List.generate(item.services.length, (index) {
+                      final s = item.services[index];
+                              
+                      
+                      final color = primaryColor;
+                              
+                      return Chip(
+                        label: Text(
+                          s,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                          ),
+                        ),
+                        backgroundColor: color,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+                Text(
+                  item.title,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    color: primaryColor,
+                  ),
+                ),
+                SizedBox(height: 8.h),
                 Text(
                   item.description,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.grey.shade700,
-                    fontSize: 13.sp,
+                    fontSize: 12.sp,
                   ),
                 ),
-
+            
+                SizedBox(height: 8.h),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    height: 30.h,
+                    width: 60.w,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.r),
+                      color: backgroungcolor,
+                      border: Border.all(color: primaryColor),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.arrow_forward, color: Colors.grey.shade700, size: 16.sp),
+                        Text(
+                          "View more".tr,
+                          style: TextStyle(
+                            fontSize: 6.sp,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            
+           
+            
+            
+               
+            
                 SizedBox(height: 12.h),
-
-             if (item.services.isNotEmpty)
-  Wrap(
-    spacing: 8.w,
-    runSpacing: 6.h,
-    children: List.generate(item.services.length, (index) {
-      final s = item.services[index];
-
-      final List<Color> chipColors = [
-        Colors.blueAccent,
-        Colors.redAccent,
-        Colors.yellowAccent,
-      ];
-      final color = chipColors[index % chipColors.length];
-
-      return Chip(
-        label: Text(
-          s,
-          style: TextStyle(
-            color: Colors.black54,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: color.withOpacity(0.1),
-        shape: StadiumBorder(),
-      );
-    }),
-  ),
-
-                SizedBox(height: 12.h),
-
-                // Divider(),
-
-                // /// Details
-                // _infoRow(Icons.location_on, "Location", item.location),
-                // _infoRow(Icons.timer, "Duration", item.duration),
-                // _infoRow(Icons.group, "Client Type", item.clientType),
-
-                // if (item.tags != null && item.tags!.isNotEmpty)
-                //   _infoRow(Icons.label, "Tags", item.tags!.join(', ')),
-
-                SizedBox(height: 12.h),
-
-                /// Testimonials
-                // if (item.testimonials != null &&
-                //     item.testimonials!.isNotEmpty)
-                //   Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Text(
-                //         "Testimonials:",
-                //         style: TextStyle(
-                //           fontWeight: FontWeight.bold,
-                //           color: primaryColor,
-                //           fontSize: 14.sp,
-                //         ),
-                //       ),
-                //       SizedBox(height: 8.h),
-                //       ...item.testimonials!.map(
-                //         (t) => Padding(
-                //           padding: EdgeInsets.symmetric(vertical: 2.h),
-                //           child: Text(
-                //             "• $t",
-                //             style: TextStyle(
-                //               color: Colors.grey.shade800,
-                //               fontSize: 12.sp,
-                //               fontStyle: FontStyle.italic,
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-
-                // SizedBox(height: 12.h),
-
-                // Text(
-                //   "Created on: ${item.createdAt.toLocal().toString().split(' ')[0]}",
-                //   style: TextStyle(
-                //     color: Colors.grey.shade500,
-                //     fontSize: 12.sp,
-                //   ),
-                // )
+            
+               
               ],
             ),
           )

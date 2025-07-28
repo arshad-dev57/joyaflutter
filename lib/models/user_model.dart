@@ -10,6 +10,7 @@ class UserModel {
   final String phone;
   final String createdAt;
   final String paymentStatus;
+  final String image;
 
   UserModel({
     required this.id,
@@ -23,6 +24,7 @@ class UserModel {
     required this.lastname,
     required this.phone,
     required this.createdAt,
+    required this.image,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class UserModel {
     lastname: json['lastname'] ?? '',
     phone: json['phone'] ?? '',
     createdAt: json['createdAt'] ?? '',
+    image: json['image'] ?? '',
   );
 }
 }

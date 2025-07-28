@@ -31,6 +31,7 @@ final RxInt currentIndex = 0.obs;
   final ServicesController servicesController = Get.put(ServicesController());
   final TextEditingController searchController = TextEditingController(); // 🔍
 
+
   @override
   void initState() {
     super.initState();
@@ -76,7 +77,7 @@ final RxInt currentIndex = 0.obs;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: backgroungcolor,
 body: _buildBody(),
     bottomNavigationBar: buildBottomNavBar(),
     );
@@ -121,11 +122,11 @@ color: Color(0xffE1DBFF),
                 shape: BoxShape.circle,
               ),
               child: SvgPicture.asset(
-                "assets/home.svg",
+                "assets/portfolio.svg",
                 colorFilter: _selectedIndex == 1
                     ? ColorFilter.mode(Colors.white, BlendMode.srcIn)
                     : ColorFilter.mode(primaryColor.withOpacity(0.8), BlendMode.srcIn),
-                height: 24.sp,
+                height: 18.sp,
               ),
             ),
           ),
@@ -252,31 +253,48 @@ Widget buildTopBar() {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             CircleAvatar(
-              backgroundColor: Colors.white,
-              radius: 20.r,
-              child: ClipOval(
-                child: Image.asset(
-                  "assets/user.jpg",
-                  fit: BoxFit.cover,
-                  height: 40.h,
-                  width: 40.w,
-                ),
-              ),
-            ),
+              CircleAvatar(
+  backgroundColor: Colors.white,
+  radius: 20.r,
+  child: ClipOval(
+    child: userProfileController.userProfile.value?.image != null
+        ? Image.network(
+            userProfileController.userProfile.value!.image!,
+            fit: BoxFit.cover,
+            height: 40.h,
+            width: 40.w,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                "assets/user.jpg",
+                fit: BoxFit.cover,
+                height: 40.h,
+                width: 40.w,
+              );
+            },
+          )
+        : Image.asset(
+            "assets/user.jpg",
+            fit: BoxFit.cover,
+            height: 40.h,
+            width: 40.w,
+          ),
+  ),
+),
+
             SizedBox(width: 8.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Hi, $username",
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w400),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+  "${'hi'.tr}${username}",
+  style: TextStyle(
+    fontSize: 12.sp,
+    color: Colors.grey,
+  ),
+),
                 SizedBox(height: 4.h),
                 Text(
-                  "Elevate Your Business with Joya",
+                  "Elevate Your Business with Joya".tr,
                   style: TextStyle(fontSize: 8.sp, fontWeight: FontWeight.w300),
                 ),
               ],
@@ -298,24 +316,36 @@ Widget buildTopBar() {
            buildTopBar(),
             SizedBox(height: 12.h),
              Padding(
-  padding: EdgeInsets.symmetric(horizontal: 10.w),
+  padding: EdgeInsets.symmetric(horizontal: 16.w),
   child: TextField(
     controller: searchController,
     onChanged: (value) => setState(() {}),
     decoration: InputDecoration(
-      hintText: "Search",
+      hintText: "Search".tr,
       hintStyle: TextStyle(
         color: Colors.grey.shade400,
-        fontSize: 14.sp,
+        fontSize: 12.sp,
       ),
-      prefixIcon: SvgPicture.asset("assets/Magnifer.svg", height: 20.h),
+      prefixIcon: Padding(
+        padding: EdgeInsets.all(4.r),
+        child: SvgPicture.asset(
+          "assets/Magnifer.svg",
+          height: 40.h,
+          width: 40.w,
+          fit: BoxFit.contain,
+        ),
+      ),
+      prefixIconConstraints: BoxConstraints(
+        minHeight: 12.h,
+        minWidth: 36.w,
+      ),
       filled: true,
-      fillColor: Colors.transparent, // or backgroungcolor if needed
+      fillColor: Colors.transparent,
       contentPadding: EdgeInsets.symmetric(vertical: 12.h),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.r),
         borderSide: BorderSide(
-          color: Colors.grey.shade300, // light gray border
+          color: Colors.grey.shade300,
           width: 1,
         ),
       ),
@@ -335,7 +365,7 @@ SizedBox(height: 12.h),
             SizedBox(height: 12.h),
 
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child:  Text(
@@ -349,6 +379,7 @@ SizedBox(height: 12.h),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: Obx(() {
+                
                 if (servicesController.isLoading.value) {
                   return GridView.builder(
                     shrinkWrap: true,
@@ -371,14 +402,14 @@ SizedBox(height: 12.h),
                   return item.title.toLowerCase().contains(query);
                 }).toList();
 
-                if (filteredServices.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.h),
-                      child: Text("No services found", style: TextStyle(fontSize: 16.sp)),
-                    ),
-                  );
-                }
+                  if (filteredServices.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
+                        child: Text("No services found", style: TextStyle(fontSize: 16.sp)),
+                      ),
+                    );
+                  }
 
                 return ListView.builder(
   shrinkWrap: true,
@@ -457,13 +488,14 @@ Widget _buildGridItem(ServiceModel item) {
                   children: [
                     SvgPicture.asset("assets/vendors.svg", height: 20.h),
                                           SizedBox(width: 4.w),
-                    Text(
-                      "${item.vendorCount} vendors",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey,
-                      ),
-                    ),
+                  Text(
+  "${item.vendorCount} ${'vendors_label'.tr}",
+  style: TextStyle(
+    fontSize: 12.sp,
+    color: Colors.grey,
+  ),
+),
+
                     Spacer(),
                      SizedBox(
                   width: 90.w,
@@ -488,7 +520,7 @@ Widget _buildGridItem(ServiceModel item) {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "view more",
+                          "view_more".tr,
                           style: TextStyle(
                             fontSize: 8.sp,
                             fontWeight: FontWeight.w500,

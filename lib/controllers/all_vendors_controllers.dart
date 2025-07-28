@@ -391,7 +391,7 @@ Future<void> fetchVendors({
         "comment": comment,
         "rating": rating,
       });
-
+print("body: $body");
       var response = await http.post(
         url,
         headers: {
@@ -416,6 +416,7 @@ Future<void> fetchVendors({
         );
         getReviews(vendorId);
       } else {
+        print("Failed to add review. Status: ${response.statusCode}");
         Get.snackbar(
           "Error",
           "Failed to add review",
